@@ -1,0 +1,8 @@
+#include "core.c"
+#include "hvec.c"
+#include "hstring.c"
+#include "hhashmap.c"
+#include "harena.c"
+#include "hsort.c"
+#include "hflag.c"
+#include "hfs.c"
