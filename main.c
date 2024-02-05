@@ -6,11 +6,11 @@ str lorem = STR_ARR(
 	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla lobortis purus a metus luctus molestie. Fusce magna dui, aliquet eget eros nec, iaculis luctus turpis. Phasellus commodo, nunc id euismod suscipit, nisl orci posuere sapien, nec convallis magna arcu nec urna. Fusce eleifend lacinia purus. Mauris sagittis ex ut bibendum dapibus. Phasellus et velit nunc. Vestibulum iaculis elementum auctor. Donec eu ultricies tortor. Donec dictum est ligula, quis tincidunt risus elementum viverra. Vestibulum eu sodales tortor. Aenean porttitor est in ex semper tincidunt. Donec pretium nec risus ut lacinia. Integer sollicitudin velit augue."
 );
 
+i32 counter = 0;
 i32 main(void) {
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 
 	InitWindow(WIDTH, HEIGHT, "Example");
-	SetTargetFPS(60);
 
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
@@ -34,7 +34,15 @@ i32 main(void) {
 					hui_cluster_start(20);
 						hui_text(STR("Second"));
 						hui_text(STR("Dos"));
-						hui_button(STR("Click me"));
+						if(hui_button(1, STR("Add 1"))) {
+							counter++;
+						}
+						if(hui_button(2, STR("Substract 1"))) {
+							counter--;
+						}
+						char buf[32];
+						snprintf(buf, sizeof(buf), "Counter: %d", counter);
+						hui_text(str_from_cstr(buf));
 					hui_cluster_end();
 				hui_cluster_end();
 				hui_block();
