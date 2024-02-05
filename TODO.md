@@ -1,5 +1,5 @@
 # TODO
-- Separate files
+- Interactivity
 - Switcher layout
 - Text layout caching
   - Between layout and draw
@@ -11,3 +11,4 @@
 
 # Done
 - Cluster layout
+- Separate files
