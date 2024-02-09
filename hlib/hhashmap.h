@@ -37,5 +37,6 @@ void hhashmap_free(HHashMap* map);
 bool hkeytype_direct_eq(void* key1, void* key2, usize size);
 usize hkeytype_direct_hash(void* key, usize size);
 extern const HKeyType HKEYTYPE_DIRECT;
+extern const HKeyType HKEYTYPE_STR;
 
 #endif

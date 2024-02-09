@@ -40,6 +40,10 @@ void hvec_push(HVec* vec, void* element) {
 	vec->len++;
 }
 
+void hvec_clear(HVec* vec) {
+	vec->len = 0;
+}
+
 void hvec_free(HVec* vec) {
 	free(vec->data);
 }

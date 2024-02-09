@@ -14,7 +14,7 @@ FILE* hfs_open_file(str path, bool read, bool writing) {
 	} else if (writing) {
 		result = fopen(path_cstr, "wb");
 	} else {
-		panic("Invalid flags passed to hfs_open_file");
+		panic("Cannot open file for neither reading nor writing");
 	}
 
 	return result;

@@ -52,6 +52,11 @@ void str_consume_chars(str* view, usize count) {
 	view->len -= count;
 }
 
+void str_consume_char(str* view) {
+	view->data++;
+	view->len--;
+}
+
 str str_split_char(str* view, char delim) {
 	for(usize i = 0; i < view->len; i++) {
 		if (view->data[i] == delim) {
@@ -176,6 +181,10 @@ bool str_write_to_filepath(str* view, str path) {
 
 bool hstring_is_whitespace(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+bool hstring_is_digit(char c) {
+	return c >= '0' && c <= '9';
 }
 
 /////////////////////// BUILDER /////////////////////////////

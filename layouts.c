@@ -288,4 +288,89 @@ void hui_cluster_end() {
 	stop_adding_children();
 }
 
+LayoutResult hui_leftright_layout(Element* el, void* data) {
+	Layout* layout = &el->layout;
+	Pixels padding = *(Pixels*)data;
+	LayoutResult result = LAYOUT_OK;
+
+	if(!el->first_child || !el->first_child->next_sibling || el->first_child->next_sibling->next_sibling) {
+		panic("Leftright must have exactly two children.");
+	}
+	Element* left = el->first_child;
+	Element* right = left->next_sibling;
+
+	if (layout->width == UNSET) {
+		layout->width = el->parent->layout.width;
+	}
+
+	Pixels x = layout->x;
+	Pixels y = layout->y;
+
+	left->layout.x = x;
+	left->layout.y = y;
+	left->compute_layout(left, left+1);
+	x += left->layout.width + padding;
+
+	if (left->layout.width > layout->width) {
+		left->layout.width = layout->width;
+		left->layout.height = UNSET;
+		left->compute_layout(left, left+1);
+	}
+
+	bool wrapped;
+
+	right->compute_layout(right, right+1);
+	if (x + right->layout.width > layout->x + layout->width) { // Does not fit horizontally
+		if(right->layout.width > layout->width) {
+			right->layout.width = layout->width;
+			right->layout.height = UNSET;
+		}
+		x = layout->x + layout->width - right->layout.width;
+		y = layout->y + left->layout.height + padding;
+		wrapped = true;
+	}
+	else { // Does fit horizontally
+		x = layout->x + layout->width - right->layout.width;
+		y = layout->y;
+		wrapped = false;
+	}
+
+	right->layout.x = x;
+	right->layout.y = y;
+	right->compute_layout(right, right+1);
+
+	if (wrapped) {
+		layout->height = left->layout.height + right->layout.height + padding;
+	} else {
+		if(left->layout.height > right->layout.height) {
+			layout->height = left->layout.height;
+		} else {
+			layout->height = right->layout.height;
+		}
+	}
+	printf("%f\n", layout->height);
+
+	return result;
+}
+
+void hui_leftright_draw(Element* el, void* data) {
+	(void) data;
+	Element* left = el->first_child;
+	left->draw(left, left+1);
+	Element* right = left->next_sibling;
+	right->draw(right, right+1);
+}
+
+void hui_leftright_start(Pixels padding) {
+	Element* element = push_element(sizeof(Pixels));
+	element->compute_layout = hui_leftright_layout;
+	element->draw = hui_leftright_draw;
+	*(Pixels*)get_element_data(element) = padding;
+	start_adding_children();
+}
+
+void hui_leftright_end() {
+	stop_adding_children();
+}
+
 #endif

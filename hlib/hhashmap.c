@@ -2,6 +2,7 @@
 #include <string.h>
 #include "hhashmap.h"
 #include "core.h"
+#include "hstring.h"
 
 HHashMap hhashmap_new_with_cap(usize key_size, usize value_size, HKeyType type, usize cap) {
 	void* keys = malloc(cap * key_size);
@@ -147,4 +148,26 @@ usize hkeytype_direct_hash(void* key, usize size) {
 const HKeyType HKEYTYPE_DIRECT = {
 	.eq = hkeytype_direct_eq,
 	.hash = hkeytype_direct_hash,
+};
+
+bool hkeytype_str_eq(void* key1, void* key2, usize size) {
+	(void) size;
+	str view1 = *(str*)key1;
+	str view2 = *(str*)key2;
+	return str_eq(view1, view2);
+}
+
+usize hkeytype_str_hash(void* key, usize size) {
+	(void) size;
+	str view = *(str*)key;
+	usize hash = 0;
+	for (usize i = 0; i < view.len; i++) {
+		hash = view.data[i] + (hash << 6) + (hash << 16) - hash;
+	}
+	return hash;
+}
+
+const HKeyType HKEYTYPE_STR = {
+	.eq = hkeytype_str_eq,
+	.hash = hkeytype_str_hash,
 };

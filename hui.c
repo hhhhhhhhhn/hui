@@ -101,8 +101,8 @@ ElementId hot_id = 0;
 ElementId active_id = 0;
 
 void hui_root_start() {
-	if (element_arena.cap == 0) element_arena = harena_new_with_cap(1024*4);
-	if (functions_vec.cap == 0) functions_vec = hvec_new_with_cap(sizeof(Handler), 1024);
+	if (element_arena.sarenas_used == 0) element_arena = harena_new_with_cap(1024*4);
+	if (functions_vec.data == NULL) functions_vec = hvec_new_with_cap(sizeof(Handler), 1024);
 
 	root = harena_alloc(&element_arena, sizeof(Element));
 	root->layout = (Layout) { .x = 0, .y = 0, .width = GetScreenWidth(), .height = UNSET };
@@ -121,21 +121,21 @@ void hui_root_end() {
 	root->compute_layout(root, root+1);
 	clock_t layout_end = clock();
 
+	clock_t handle_start = clock();
 	for(usize i = 0; i < functions_vec.len; i++) {
 		Handler* handler = (Handler*)hvec_at(&functions_vec, i);
 		handler->handler(handler->element, handler->element+1);
 	}
+	clock_t handle_end = clock();
 
 	clock_t draw_start = clock();
 	root->draw(root, root+1);
 	clock_t draw_end = clock();
 
-	harena_free(&element_arena); // TODO: Just reset
-	element_arena = harena_new_with_cap(1024*4);
-	hvec_free(&functions_vec); // TODO: Just reset
-	functions_vec = hvec_new_with_cap(sizeof(Handler), 1024);
+	harena_clear(&element_arena);
+	hvec_clear(&functions_vec);
 
-	printf("Layout: %f ms, Draw: %f ms\n", (double)(layout_end - layout_start) / CLOCKS_PER_SEC * 1000, (double)(draw_end - draw_start) / CLOCKS_PER_SEC * 1000);
+	printf("Layout: %f ms, Handle: %f ms, Draw: %f ms\n", (double)(layout_end - layout_start) / CLOCKS_PER_SEC * 1000, (double)(handle_end - handle_start) / CLOCKS_PER_SEC * 1000, (double)(draw_end - draw_start) / CLOCKS_PER_SEC * 1000);
 }
 
 void* get_element_data(Element* element) {

@@ -6,3 +6,4 @@
 #include "hsort.c"
 #include "hflag.c"
 #include "hfs.c"
+#include "hparse.c"

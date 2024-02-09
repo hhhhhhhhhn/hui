@@ -22,15 +22,11 @@ i32 main(void) {
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
 			hui_root_start();
+				hui_leftright_start(20);
+					hui_button(6, STR("LEFT"));
+					hui_button(5, STR("RIGHT"));
+				hui_leftright_end();
 				hui_cluster_start(40);
-					hui_cluster_start(20);
-						for (usize i = 0; i < 20; i++) {
-							hui_box_start(box_style);
-								hui_text(STR("First"));
-							hui_box_end();
-							hui_text(STR("Uno"));
-						}
-					hui_cluster_end();
 					hui_cluster_start(20);
 						hui_text(STR("Second"));
 						hui_text(STR("Dos"));
@@ -43,10 +39,17 @@ i32 main(void) {
 						char buf[32];
 						snprintf(buf, sizeof(buf), "Counter: %d", counter);
 						hui_text(str_from_cstr(buf));
+						hui_cluster_start(20);
+							for (i32 i = 0; i < counter; i++) {
+								hui_box_start(box_style);
+									hui_text(STR("Element"));
+								hui_box_end();
+							}
+						hui_cluster_end();
 					hui_cluster_end();
 				hui_cluster_end();
 				hui_block();
-				hui_stack_start(50);
+				hui_stack_start(10);
 					hui_center_start(10);
 						hui_box_start(box_style);
 							hui_text(STR("This is a centered string"));

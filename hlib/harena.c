@@ -23,6 +23,10 @@ void* hstaticarena_alloc(HStaticArena* arena, usize size) {
 	return ptr;
 }
 
+void hstaticarena_clear(HStaticArena* arena) {
+	arena->used = 0;
+}
+
 void hstaticarena_free(HStaticArena* arena) {
 	free(arena->data);
 }
@@ -31,11 +35,10 @@ void hstaticarena_free(HStaticArena* arena) {
 						// every next arena is double the last
 
 HArena harena_new_with_cap(usize cap) {
-	return (HArena){
-		.sarenas = {{0}},
-		.cap = cap,
-		.sarenas_used = 0,
-	};
+	HArena arena = {.sarenas = {{0}}, .first_sarena_cap = cap, .sarenas_used = 0};
+	arena.sarenas[0] = hstaticarena_new(cap);
+	arena.sarenas_used++;
+	return arena;
 }
 
 HArena harena_new() {
@@ -43,25 +46,34 @@ HArena harena_new() {
 }
 
 void* harena_alloc(HArena* arena, usize size) {
-	if (arena->sarenas_used == 0) {
-		arena->sarenas[0] = hstaticarena_new(arena->cap * (1 << arena->sarenas_used));
-		arena->sarenas_used++;
-	}
 	for (usize i = arena->sarenas_used-1; i < ARENA_AMOUNT; i++) {
 		void* ptr = hstaticarena_alloc(&arena->sarenas[i], size);
 		if (ptr != NULL) {
 			return ptr;
 		}
-		assert(i+1 < ARENA_AMOUNT);  // More than 1TB of data? that or memory allocation failed
-		arena->sarenas[i+1] = hstaticarena_new(arena->cap * (1 << arena->sarenas_used));
+		assert(i+1 < ARENA_AMOUNT);  // More than 1TB of data? That or memory allocation failed
+
+		if (arena->sarenas[i+1].data == NULL) { // If cleared, this check makes sure we reuse the previously existing one
+			arena->sarenas[i+1] = hstaticarena_new(arena->first_sarena_cap * (1 << arena->sarenas_used));
+		}
 		arena->sarenas_used++;
 	}
 
 	unreachable();
 }
 
-void harena_free(HArena* arena) {
+void harena_clear(HArena* arena) {
 	for (usize i = 0; i < arena->sarenas_used; i++) {
+		hstaticarena_clear(&arena->sarenas[i]);
+	}
+	arena->sarenas_used = 1;
+}
+
+void harena_free(HArena* arena) {
+	for (usize i = 0; i < ARENA_AMOUNT; i++) {
+		if (arena->sarenas[i].data == NULL) {
+			return;
+		}
 		hstaticarena_free(&arena->sarenas[i]);
 	}
 }
