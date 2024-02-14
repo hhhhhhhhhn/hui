@@ -1,5 +1,6 @@
 # TODO
 ## Now
+- Add a better way of adding handler, instead of using `parent`
 - Scroller support
   - Add active render texture
     - This can be a stack, which is pushed/popped during the `draw()` functions

@@ -373,4 +373,106 @@ void hui_leftright_end() {
 	stop_adding_children();
 }
 
+LayoutResult hui_fixed_layout(Element* el, void* data) {
+	Layout* layout = &el->layout;
+	Pixels* size = (Pixels*)data;
+	if (!el->first_child || el->first_child->next_sibling) {
+		panic("hui_fixed must have exactly one child");
+	}
+	layout->width = size[0];
+	layout->height = size[1];
+	el->first_child->layout.x = layout->x;
+	el->first_child->layout.y = layout->y;
+	el->first_child->layout.width = size[0];
+	el->first_child->layout.height = size[1];
+	el->first_child->compute_layout(el->first_child, el->first_child+1);
+	return LAYOUT_OK;
+}
+
+void hui_fixed_draw(Element* el, void* data) {
+	(void) data;
+	el->first_child->draw(el->first_child, el->first_child+1);
+}
+
+void hui_fixed_start(Pixels width, Pixels height) {
+	Element* element = push_element(sizeof(Pixels)*2);
+	element->compute_layout = hui_fixed_layout;
+	element->draw = hui_fixed_draw;
+	Pixels* data = get_element_data(element);
+	data[0] = width;
+	data[1] = height;
+	start_adding_children();
+}
+void hui_fixed_end() {
+	stop_adding_children();
+}
+
+LayoutResult hui_scroll_layout(Element* el, void* data) {
+	Pixels* offset = *(Pixels**)data;
+	Layout* layout = &el->layout;
+	LayoutResult result = LAYOUT_OK;
+
+	if(!el->first_child || el->first_child->next_sibling) {
+		panic("hui_scroll must have exactly one child");
+	}
+
+	Element* child = el->first_child;
+	child->layout.x = layout->x;
+	child->layout.y = layout->y - *offset;
+
+	child->compute_layout(child, child+1);
+
+	if(layout->width == UNSET) {
+		layout->width = child->layout.width;
+	}
+	if(layout->height == UNSET) {
+		layout->height = child->layout.height;
+	}
+	return result;
+}
+
+void hui_scroll_draw(Element* el, void* data) {
+	(void) data;
+	BeginScissorMode(el->layout.x, el->layout.y, el->layout.width, el->layout.height);
+		Element* child = el->first_child;
+		child->draw(child, child+1);
+	EndScissorMode();
+}
+
+// TODO: handle nested
+void hui_scroll_handle(Element* el, void* data) {
+	Pixels* offset = *(Pixels**)data;
+	Rectangle rect = (Rectangle) {
+		.x = el->layout.x,
+		.y = el->layout.y,
+		.width = el->layout.width,
+		.height = el->layout.height,
+	};
+
+	if (CheckCollisionPointRec(GetMousePosition(), rect)) {
+		Pixels dy = -GetMouseWheelMoveV().y * 10;
+
+		*offset += dy;
+		if (*offset < 0) *offset = 0;
+		if (*offset > el->first_child->layout.height - el->layout.height) *offset = el->first_child->layout.height - el->layout.height;
+
+		if (dy != 0) {
+			el->first_child->layout.x *= dy;
+		}
+	}
+}
+
+void hui_scroll_start(Pixels* offset) {
+	Element* element = push_element(sizeof(Pixels*));
+	element->compute_layout = hui_scroll_layout;
+	element->draw = hui_scroll_draw;
+	*(Pixels**)get_element_data(element) = offset;
+	push_handler(hui_scroll_handle, element);
+	start_adding_children();
+}
+
+void hui_scroll_end() {
+	stop_adding_children();
+}
+
 #endif

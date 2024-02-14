@@ -19,4 +19,4 @@ hlib.o: $(wildcard hlib/*.c)
 	cc $(CFLAGS) -c hlib/hlib.c -o hlib.o
 
 clean:
-	rm -f *.o *_test
+	rm -f *.o *_test main
