@@ -455,10 +455,6 @@ void hui_scroll_handle(Element* el, void* data) {
 		*offset += dy;
 		if (*offset < 0) *offset = 0;
 		if (*offset > el->first_child->layout.height - el->layout.height) *offset = el->first_child->layout.height - el->layout.height;
-
-		if (dy != 0) {
-			el->first_child->layout.x *= dy;
-		}
 	}
 }
 
