@@ -12,7 +12,7 @@ endif
 
 all: hlib.o main
 
-main: main.c hlib.o
+main: $(wildcard *.c) hlib.o
 	cc $(CFLAGS) -o main main.c hlib.o
 
 hlib.o: $(wildcard hlib/*.c)

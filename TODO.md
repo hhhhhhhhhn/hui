@@ -1,4 +1,13 @@
 # TODO
+## Now
+- Scroller support
+  - Add active render texture
+    - This can be a stack, which is pushed/popped during the `draw()` functions
+    - NO! This can be done with `BeginScisssorMode`
+  - Maybe a similar system for interaction? Like an active interaction Rect
+- Change `== UNSET` with `is_unset()`, to check all negative numbers
+
+## Later
 - Switcher layout
 - Text layout caching
   - Between layout and draw
@@ -7,7 +16,6 @@
         - But how would you store that between frames?
   - Between frames
     - Hashmap of (text, width) -> (newline indexes, height)?
-- Change `== UNSET` with `is_unset()`, to check all negative numbers
 
 # Done
 - Cluster layout

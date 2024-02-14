@@ -245,10 +245,10 @@ LayoutResult hui_cluster_layout(Element* el, void* data) {
 	}
 
 	if(!height_was_set_by_parent) {
-		layout->height = y + row_max_height;
+		layout->height = y + row_max_height - layout->y;
 	} else {
-		if(y + row_max_height > layout->height) {
-			// asm("int3; nop");
+		if(y + row_max_height - layout->y > layout->height) {
+			// Oopsie daisy, too large. TODO: Handle this somehow
 		}
 	}
 	if(!width_was_set_by_parent) {
