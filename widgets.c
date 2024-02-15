@@ -10,13 +10,8 @@ ElementId button_clicked = 0;
 
 void hui_button_handle(Element* el, void* data) {
 	(void) data;
-	Rectangle rect = (Rectangle) {
-		.x = el->layout.x,
-		.y = el->layout.y,
-		.width = el->layout.width,
-		.height = el->layout.height,
-	};
-	if (CheckCollisionPointRec(GetMousePosition(), rect)) {
+	Vector2 mouse = GetMousePosition();
+	if (CheckCollisionPointRec(mouse, el->layout) && CheckCollisionPointRec(mouse, *el->bounding_box)) {
 		hot_id = el->id;
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			active_id = el->id;

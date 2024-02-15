@@ -17,12 +17,7 @@ typedef u64 ElementId;
 
 const Pixels UNSET = -15001;
 
-typedef struct {
-	Pixels x;
-	Pixels y;
-	Pixels width;
-	Pixels height;
-} Layout;
+typedef Rectangle Layout;
 
 typedef u8 LayoutResult;
 const LayoutResult LAYOUT_OK = 0;
@@ -37,11 +32,13 @@ typedef struct Element {
 	struct Element* next_sibling;
 	struct Element* prev_sibling;
 	Layout          layout;
+	Layout*         bounding_box;
 	LayoutResult    (*compute_layout)(struct Element*, void*);
 	void            (*draw)(struct Element*, void*);
 } Element;
 
 Element default_element = {
+	.id = 0,
 	.parent = NULL,
 	.first_child = NULL,
 	.next_sibling = NULL,
@@ -54,9 +51,19 @@ Element default_element = {
 HArena element_arena = {0};
 HVec functions_vec = {0};
 
+#define BOUNDING_BOX_STACK_CAP 10
+Layout* bounding_box_stack[BOUNDING_BOX_STACK_CAP] = {0};
+usize bounding_box_stack_len = 0;
+
 Element* root;
 
-LayoutResult hui_root_compute_layout(Element* el, void* data) {
+Element* parent; // At most, one of these two is not NULL
+Element* prev_sibling;
+
+ElementId hot_id = 0;
+ElementId active_id = 0;
+
+LayoutResult hui_root_layout(Element* el, void* data) {
 	(void) data;
 	Pixels y = el->layout.y;
 	Pixels x = el->layout.x;
@@ -94,12 +101,6 @@ void push_handler(void (*handler)(Element*, void*), Element* el) {
 	hvec_push(&functions_vec, &handler_struct);
 }
 
-Element* parent; // At most, one of these is not NULL
-Element* prev_sibling;
-
-ElementId hot_id = 0;
-ElementId active_id = 0;
-
 void hui_root_start() {
 	if (element_arena.sarenas_used == 0) element_arena = harena_new_with_cap(1024*4);
 	if (functions_vec.data == NULL) functions_vec = hvec_new_with_cap(sizeof(Handler), 1024);
@@ -110,8 +111,11 @@ void hui_root_start() {
 	root->next_sibling = NULL;
 	root->prev_sibling = NULL;
 	root->first_child = NULL;
-	root->compute_layout = hui_root_compute_layout;
+	root->compute_layout = hui_root_layout;
 	root->draw = hui_root_draw;
+
+	bounding_box_stack_len = 1;
+	bounding_box_stack[0] = &root->layout;
 
 	parent = root;
 }
@@ -158,6 +162,7 @@ Element* push_element(usize data_size) {
 		panic("No parent nor prev_sibling");
 	}
 	element->layout = (Layout) { .x = UNSET, .y = UNSET, .width = UNSET, .height = UNSET };
+	element->bounding_box = bounding_box_stack[bounding_box_stack_len-1];
 	element->next_sibling = NULL;
 	element->first_child = NULL;
 	element->draw = NULL;
@@ -166,6 +171,16 @@ Element* push_element(usize data_size) {
 	parent = NULL;
 	prev_sibling = element;
 	return element;
+}
+
+void start_bounding_box(Layout* layout) {
+	bounding_box_stack_len++;
+	assert(bounding_box_stack_len <= BOUNDING_BOX_STACK_CAP);
+	bounding_box_stack[bounding_box_stack_len-1] = layout;
+}
+
+void end_bounding_box() {
+	bounding_box_stack_len--;
 }
 
 void start_adding_children() {

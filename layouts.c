@@ -348,7 +348,6 @@ LayoutResult hui_leftright_layout(Element* el, void* data) {
 			layout->height = right->layout.height;
 		}
 	}
-	printf("%f\n", layout->height);
 
 	return result;
 }
@@ -442,14 +441,8 @@ void hui_scroll_draw(Element* el, void* data) {
 // TODO: handle nested
 void hui_scroll_handle(Element* el, void* data) {
 	Pixels* offset = *(Pixels**)data;
-	Rectangle rect = (Rectangle) {
-		.x = el->layout.x,
-		.y = el->layout.y,
-		.width = el->layout.width,
-		.height = el->layout.height,
-	};
 
-	if (CheckCollisionPointRec(GetMousePosition(), rect)) {
+	if (CheckCollisionPointRec(GetMousePosition(), el->layout)) {
 		Pixels dy = -GetMouseWheelMoveV().y * 10;
 
 		*offset += dy;
@@ -464,11 +457,13 @@ void hui_scroll_start(Pixels* offset) {
 	element->draw = hui_scroll_draw;
 	*(Pixels**)get_element_data(element) = offset;
 	push_handler(hui_scroll_handle, element);
+	start_bounding_box(&element->layout);
 	start_adding_children();
 }
 
 void hui_scroll_end() {
 	stop_adding_children();
+	end_bounding_box();
 }
 
 #endif

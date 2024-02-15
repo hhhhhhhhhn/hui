@@ -1,4 +1,11 @@
 # Design
+hui is a 4-pass immediate-mode GUI library, written in C99.
+The passes are:
+1. Creating the element tree and handling events (e.g. responding to a button click).
+   This is the code the hui user writes.
+2. Layout pass
+3. Input handling pass.
+4. Rendering pass.
 
 ## Layouts
 Consists of an x and y position, alongside the width and height.

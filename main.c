@@ -25,7 +25,7 @@ i32 main(void) {
 			hui_root_start();
 				hui_fixed_start(800, 200);
 					hui_scroll_start(&scroll);
-						hui_stack_start(2);
+						hui_stack_start(20);
 							hui_text(lorem);
 							hui_text(lorem);
 							hui_text(lorem);
