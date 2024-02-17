@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Werror -Wextra -Wpedantic --std=c99 -g -lraylib
+CFLAGS += -Wall -Werror -Wextra -Wpedantic --std=c99 -g -lraylib
 
 ifdef debug
 	CFLAGS += -DHLIB_DEBUG -fsanitize=undefined -fsanitize=address -fsanitize=leak
@@ -12,11 +12,14 @@ endif
 
 all: hlib.o main
 
-main: $(wildcard *.c) hlib.o
-	cc $(CFLAGS) -o main main.c hlib.o
+main: $(wildcard *.c) hlib.o hui.o
+	cc $(CFLAGS) -o main main.c hlib.o hui.o
 
 hlib.o: $(wildcard hlib/*.c)
 	cc $(CFLAGS) -c hlib/hlib.c -o hlib.o
+
+hui.o: $(wildcard hui/*.c)
+	cc $(CFLAGS) -c hui/lib.c -o hui.o
 
 clean:
 	rm -f *.o *_test main

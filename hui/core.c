@@ -1,41 +1,14 @@
-#ifndef _HUI_H
-#define _HUI_H
+#ifndef _HUI_CORE_C
+#define _HUI_CORE_C
 
 #include <raylib.h>
-#include "hlib/core.h"
-#include "hlib/hstring.h"
-#include "hlib/hvec.h"
-#include "hlib/harena.h"
 #include <time.h>
+#include "../hlib/core.h"
+#include "../hlib/hstring.h"
+#include "../hlib/hvec.h"
+#include "../hlib/harena.h"
 
-#define WIDTH 800
-#define HEIGHT 600
-
-
-typedef f32 Pixels;
-typedef u64 ElementId;
-
-const Pixels UNSET = -15001;
-
-typedef Rectangle Layout;
-
-typedef u8 LayoutResult;
-const LayoutResult LAYOUT_OK = 0;
-const LayoutResult LAYOUT_ASK_PARENT = 1;
-const LayoutResult LAYOUT_ASK_CHILDREN = 2;
-const LayoutResult LAYOUT_ASK_ALL = LAYOUT_ASK_PARENT | LAYOUT_ASK_CHILDREN;
-
-typedef struct Element {
-	ElementId       id;
-	struct Element* parent;
-	struct Element* first_child;
-	struct Element* next_sibling;
-	struct Element* prev_sibling;
-	Layout          layout;
-	Layout*         bounding_box;
-	LayoutResult    (*compute_layout)(struct Element*, void*);
-	void            (*draw)(struct Element*, void*);
-} Element;
+#include "hui.h"
 
 Element default_element = {
 	.id = 0,
@@ -101,10 +74,17 @@ void push_handler(void (*handler)(Element*, void*), Element* el) {
 	hvec_push(&functions_vec, &handler_struct);
 }
 
-void hui_root_start() {
-	if (element_arena.sarenas_used == 0) element_arena = harena_new_with_cap(1024*4);
-	if (functions_vec.data == NULL) functions_vec = hvec_new_with_cap(sizeof(Handler), 1024);
+void hui_init() {
+	element_arena = harena_new_with_cap(1024*4);
+	functions_vec = hvec_new_with_cap(sizeof(Handler), 1024);
+}
 
+void hui_deinit() {
+	if(element_arena.sarenas_used > 0) harena_free(&element_arena);
+	if(functions_vec.data != NULL) hvec_free(&functions_vec);
+}
+
+void hui_root_start() {
 	root = harena_alloc(&element_arena, sizeof(Element));
 	root->layout = (Layout) { .x = 0, .y = 0, .width = GetScreenWidth(), .height = UNSET };
 	root->parent = NULL;
@@ -305,5 +285,4 @@ void hui_text(str text) {
 	element->compute_layout = hui_text_layout;
 	*(str*)get_element_data(element) = text;
 }
-
 #endif

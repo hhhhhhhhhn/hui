@@ -1,9 +1,6 @@
-#ifndef _HUI_WIDGETS_H
-#define _HUI_WIDGETS_H
-
-#include "hui.c"
-#include "hlib/hstring.h"
-#include "layouts.c"
+#include "hui.h"
+#include "../hlib/hstring.h"
+#include "core.c"
 #include <raylib.h>
 
 ElementId button_clicked = 0;
@@ -49,5 +46,3 @@ bool hui_button(ElementId id, str text) {
 
 	return button_clicked == id;
 }
-
-#endif

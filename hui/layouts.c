@@ -1,6 +1,5 @@
-#ifndef _HUI_LAYOUTS_H
-#define _HUI_LAYOUTS_H
-#include "hui.c"
+#include "hui.h"
+#include "core.c"
 
 LayoutResult hui_stack_layout(Element* el, void* data) {
 	Pixels gap = *(Pixels*)data;
@@ -44,14 +43,6 @@ void hui_stack_start(Pixels gap) {
 void hui_stack_end() {
 	stop_adding_children();
 }
-
-typedef struct {
-	Color  background_color;
-	Pixels padding;
-	Color  border_color;
-	Pixels border_width;
-} BoxStyle;
-
 LayoutResult hui_box_layout(Element* el, void* data) {
 	BoxStyle style = *(BoxStyle*)data;
 	LayoutResult result = LAYOUT_OK;
@@ -443,7 +434,7 @@ void hui_scroll_handle(Element* el, void* data) {
 	Pixels* offset = *(Pixels**)data;
 
 	if (CheckCollisionPointRec(GetMousePosition(), el->layout)) {
-		Pixels dy = -GetMouseWheelMoveV().y * 10;
+		Pixels dy = -GetMouseWheelMoveV().y * 25;
 
 		*offset += dy;
 		if (*offset < 0) *offset = 0;
@@ -465,5 +456,3 @@ void hui_scroll_end() {
 	stop_adding_children();
 	end_bounding_box();
 }
-
-#endif
