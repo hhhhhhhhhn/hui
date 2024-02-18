@@ -38,20 +38,12 @@ ElementId active_id = 0;
 
 LayoutResult hui_root_layout(Element* el, void* data) {
 	(void) data;
-	Pixels y = el->layout.y;
-	Pixels x = el->layout.x;
-
-	Element* child = el->first_child;
-	while(child != NULL) {
-		child->layout.x = x;
-		child->layout.y = y;
-		child->compute_layout(child, child+1);
-		y += child->layout.height;
-
-		child = child->next_sibling;
+	if(!el->first_child || el->first_child->next_sibling) {
+		panic("Root must have exactly one child");
 	}
-	el->layout.height = y - el->layout.y;
-
+	Element* child = el->first_child;
+	child->layout = el->layout;
+	child->compute_layout(child, child+1);
 	return LAYOUT_OK;
 }
 
@@ -86,7 +78,7 @@ void hui_deinit() {
 
 void hui_root_start() {
 	root = harena_alloc(&element_arena, sizeof(Element));
-	root->layout = (Layout) { .x = 0, .y = 0, .width = GetScreenWidth(), .height = UNSET };
+	root->layout = (Layout) { .x = 0, .y = 0, .width = GetScreenWidth(), .height = GetScreenHeight() };
 	root->parent = NULL;
 	root->next_sibling = NULL;
 	root->prev_sibling = NULL;

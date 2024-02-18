@@ -421,6 +421,10 @@ LayoutResult hui_scroll_layout(Element* el, void* data) {
 	return result;
 }
 
+// These variables are used so that only one scroll is handled with the wheel at a time
+Pixels* last_scrolled_offset = NULL;
+Pixels last_scrolled_prev_offset = UNSET;
+
 void hui_scroll_draw(Element* el, void* data) {
 	(void) data;
 	BeginScissorMode(el->layout.x, el->layout.y, el->layout.width, el->layout.height);
@@ -429,11 +433,17 @@ void hui_scroll_draw(Element* el, void* data) {
 	EndScissorMode();
 }
 
-// TODO: handle nested
 void hui_scroll_handle(Element* el, void* data) {
 	Pixels* offset = *(Pixels**)data;
 
 	if (CheckCollisionPointRec(GetMousePosition(), el->layout)) {
+		if(last_scrolled_offset != NULL && last_scrolled_offset != offset) {
+			*last_scrolled_offset = last_scrolled_prev_offset;
+		}
+
+		last_scrolled_offset = offset;
+		last_scrolled_prev_offset = *offset;
+
 		Pixels dy = -GetMouseWheelMoveV().y * 25;
 
 		*offset += dy;
@@ -443,6 +453,7 @@ void hui_scroll_handle(Element* el, void* data) {
 }
 
 void hui_scroll_start(Pixels* offset) {
+	last_scrolled_offset = NULL;
 	Element* element = push_element(sizeof(Pixels*));
 	element->compute_layout = hui_scroll_layout;
 	element->draw = hui_scroll_draw;
