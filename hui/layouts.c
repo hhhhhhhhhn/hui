@@ -444,7 +444,7 @@ void hui_scroll_handle(Element* el, void* data) {
 		last_scrolled_offset = offset;
 		last_scrolled_prev_offset = *offset;
 
-		Pixels dy = -GetMouseWheelMoveV().y * 25;
+		Pixels dy = -GetMouseWheelMoveV().y * 1500 * frame_time;
 
 		*offset += dy;
 		if (*offset < 0) *offset = 0;

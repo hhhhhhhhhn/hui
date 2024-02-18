@@ -11,7 +11,7 @@ Pixels inner_scroll = 0;
 i32 counter = 0;
 i32 main(void) {
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
-
+	SetTargetFPS(60);
 	InitWindow(800, 600, "Example");
 	hui_init();
 

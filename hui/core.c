@@ -4,7 +4,6 @@
 #include <raylib.h>
 #include <time.h>
 #include "../hlib/core.h"
-#include "../hlib/hstring.h"
 #include "../hlib/hvec.h"
 #include "../hlib/harena.h"
 
@@ -92,7 +91,10 @@ void hui_root_start() {
 	parent = root;
 }
 
+f32 frame_time;
 void hui_root_end() {
+	frame_time = GetFrameTime();
+
 	clock_t layout_start = clock();
 	root->compute_layout(root, root+1);
 	clock_t layout_end = clock();
@@ -201,80 +203,5 @@ void hui_block() {
 	element->compute_layout = hui_block_layout;
 	Color* color = get_element_data(element);
 	*color = RED;
-}
-
-LayoutResult hui_text_layout(Element* element, void* data) {
-	LayoutResult result = LAYOUT_OK;
-	Layout* layout = &element->layout;
-	str text = *(str*)data;
-
-	Font font = GetFontDefault();
-	f32 scale_factor = 20/(f32)font.baseSize;
-
-	if(layout->width == UNSET) {
-		layout->width = MeasureText(TextFormat("%.*s", (int)text.len, text.data), 20);
-		if(layout->width > element->parent->layout.width) {
-			layout->width = element->parent->layout.width;
-		}
-	}
-
-	Pixels x_start = element->layout.x;
-	Pixels x = x_start;
-	Pixels y = element->layout.y;
-
-	int codepoint_bytes = 0;
-	for (usize i = 0; i < text.len; i += codepoint_bytes) {
-		int chr = GetCodepoint(&text.data[i], &codepoint_bytes);
-		int index = GetGlyphIndex(font, chr);
-		Pixels chr_width = font.glyphs[index].advanceX ? font.glyphs[index].advanceX : font.recs[index].width;
-		chr_width *= scale_factor;
-		if (x + chr_width > element->layout.x + element->layout.width) {
-			x = x_start;
-			y += 20;
-		}
-		x += chr_width;
-		x += 20*0.1;
-	}
-
-	if(layout->height == UNSET) {
-		layout->height = y - element->layout.y + 20;
-	}
-	return result;
-}
-
-void hui_text_draw(Element* element, void* data) {
-	str text = *(str*)data;
-
-	Pixels x_start = element->layout.x;
-	Pixels x = x_start;
-	Pixels y = element->layout.y;
-
-	Font font = GetFontDefault();
-	f32 scale_factor = 20/(f32)font.baseSize;
-
-	int codepoint_bytes = 0;
-	for (usize i = 0; i < text.len; i += codepoint_bytes) {
-		int chr = GetCodepoint(&text.data[i], &codepoint_bytes);
-		int index = GetGlyphIndex(font, chr);
-
-		Pixels chr_width = font.glyphs[index].advanceX ? font.glyphs[index].advanceX : font.recs[index].width;
-		chr_width *= scale_factor;
-
-		if (x + chr_width > element->layout.x + element->layout.width) {
-			x = x_start;
-			y += 20;
-		}
-
-		DrawTextCodepoint(font, chr, (Vector2){ .x = x, .y = y }, 20, BLACK);
-		x += chr_width;
-		x += 20*0.1;
-	}
-}
-
-void hui_text(str text) {
-	Element* element = push_element(sizeof(str));
-	element->draw = hui_text_draw;
-	element->compute_layout = hui_text_layout;
-	*(str*)get_element_data(element) = text;
 }
 #endif
