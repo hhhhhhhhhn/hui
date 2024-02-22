@@ -75,6 +75,11 @@ void hui_deinit() {
 	if(functions_vec.data != NULL) hvec_free(&functions_vec);
 }
 
+i64 frame_num = 0;
+i64 hui_get_frame_num() {
+	return frame_num;
+}
+
 void hui_root_start() {
 	root = harena_alloc(&element_arena, sizeof(Element));
 	root->layout = (Layout) { .x = 0, .y = 0, .width = GetScreenWidth(), .height = GetScreenHeight() };
@@ -87,6 +92,8 @@ void hui_root_start() {
 
 	bounding_box_stack_len = 1;
 	bounding_box_stack[0] = &root->layout;
+
+	frame_num++;
 
 	parent = root;
 }

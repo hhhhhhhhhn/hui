@@ -25,7 +25,7 @@ void hui_button_handle(Element* el, void* data) {
 	}
 }
 
-bool hui_button(ElementId id, str text) {
+bool hui_button(ElementId id, str text, TextStyle style) {
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
 		.padding = 15,
@@ -41,7 +41,7 @@ bool hui_button(ElementId id, str text) {
 	hui_box_start(box_style);
 		parent->id = id;
 		push_handler(hui_button_handle, parent);
-		hui_text(text);
+		hui_text(text, style);
 	hui_box_end();
 
 	return button_clicked == id;

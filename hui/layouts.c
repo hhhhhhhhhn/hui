@@ -95,8 +95,10 @@ void hui_box_draw(Element* el, void* data) {
 	Layout* layout = &el->layout;
 	assert(el->first_child);
 
-	DrawRectangle(layout->x, layout->y, layout->width, layout->height, style.background_color);
-	DrawRectangleLinesEx((Rectangle){.x = layout->x, .y = layout->y, .width = layout->width, .height = layout->height}, style.border_width, style.border_color);
+	if (style.background_color.a != 0 && style.border_color.a != 0) {
+		DrawRectangle(layout->x, layout->y, layout->width, layout->height, style.background_color);
+		DrawRectangleLinesEx((Rectangle){.x = layout->x, .y = layout->y, .width = layout->width, .height = layout->height}, style.border_width, style.border_color);
+	}
 	el->first_child->draw(el->first_child, el->first_child+1);
 }
 

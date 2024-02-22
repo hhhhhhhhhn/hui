@@ -30,6 +30,7 @@ typedef struct Element {
 	void            (*draw)(struct Element*, void*);
 } Element;
 
+i64 hui_get_frame_num();
 void push_handler(void (*handler)(Element*, void*), Element* el);
 void hui_init();
 void hui_deinit();
@@ -42,7 +43,6 @@ void end_bounding_box();
 void start_adding_children();
 void stop_adding_children();
 void hui_block();
-void hui_text(str text);
 
 // Layouts
 void hui_stack_start(Pixels gap);
@@ -68,5 +68,12 @@ void hui_fixed_end();
 void hui_scroll_start(Pixels* offset);
 void hui_scroll_end();
 
-bool hui_button(ElementId id, str text);
+typedef struct {
+	Color color;
+	Pixels font_size;
+} TextStyle;
+
+void hui_text(str text, TextStyle style);
+
+bool hui_button(ElementId id, str text, TextStyle style);
 #endif

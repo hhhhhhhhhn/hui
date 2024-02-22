@@ -6,7 +6,7 @@
 - Add text input
 - Add grid
 - Text layout caching
-  - TODO: Cache invalidation...
+  - TODO: Using multiple tiles for bigger size
 
 ## Later
 - Switcher layout
