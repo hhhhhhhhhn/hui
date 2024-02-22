@@ -90,10 +90,11 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	EndScissorMode();
 	EndTextureMode();
 
+	Pixels height = y + font_size - y_init;
 	values[index].used = true;
 	values[index].last_frame = frame_num;
-	values[index].height = y + font_size - y_init;
-	values[index].texture_rec = (Rectangle){ .x = x_init, .y = -HUI_TEXT_CACHE_TILE_HEIGHT-y_init, .width = HUI_TEXT_CACHE_TILE_WIDTH, .height = -HUI_TEXT_CACHE_TILE_HEIGHT};
+	values[index].height = height;
+	values[index].texture_rec = (Rectangle){ .x = x_init, .y = -HUI_TEXT_CACHE_TILE_HEIGHT-y_init+height, .width = width, .height = -HUI_TEXT_CACHE_TILE_HEIGHT + height};
 	keys[index].hash = text_hash;
 	keys[index].width = width;
 	keys[index].font_size = font_size;
