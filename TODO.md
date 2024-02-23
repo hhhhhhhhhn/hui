@@ -2,7 +2,9 @@
 ## Now
 - Fix inherent text width, wrapping has error on some font sizes
 - Change `== UNSET` with `is_unset()`, to check all negative numbers
+- Deinit text cache on exit
 - Add styling options to button
+- Add nothing element
 - Add text input
 - Add grid
 

@@ -218,4 +218,26 @@ void hui_block() {
 	Color* color = get_element_data(element);
 	*color = RED;
 }
+
+LayoutResult hui_nothing_layout(Element* element, void* data) {
+	(void) data;
+	if(element->layout.width == UNSET) {
+		element->layout.width = 0;
+	}
+	if(element->layout.height == UNSET) {
+		element->layout.height = 0;
+	}
+	return LAYOUT_OK;
+}
+
+void hui_nothing_draw(Element* element, void* data) {
+	(void) data;
+	(void) element;
+}
+
+void hui_nothing() {
+	Element* element = push_element(0);
+	element->draw = hui_nothing_draw;
+	element->compute_layout = hui_nothing_layout;
+}
 #endif

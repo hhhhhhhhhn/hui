@@ -57,6 +57,10 @@ i32 main(void) {
 								scroll--;
 							};
 						hui_leftright_end();
+						hui_leftright_start(0);
+							hui_nothing();
+							hui_text(STR("There is nothing on the left"), text_style);
+						hui_leftright_end();
 						hui_cluster_start(40);
 							hui_cluster_start(20);
 								hui_text(STR("Second"), text_style);

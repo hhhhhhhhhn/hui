@@ -43,6 +43,7 @@ void start_bounding_box(Layout* layout);
 void end_bounding_box();
 void start_adding_children();
 void stop_adding_children();
+void hui_nothing();
 void hui_block();
 
 // Layouts
