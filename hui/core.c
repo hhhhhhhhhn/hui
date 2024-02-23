@@ -87,6 +87,10 @@ i64 hui_get_frame_num() {
 	return frame_num;
 }
 
+bool is_unset(Pixels value) {
+	return value < 0;
+}
+
 void hui_root_start() {
 	root = harena_alloc(&element_arena, sizeof(Element));
 	root->layout = (Layout) { .x = 0, .y = 0, .width = GetScreenWidth(), .height = GetScreenHeight() };

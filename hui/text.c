@@ -174,7 +174,7 @@ LayoutResult hui_text_layout(Element* element, void* data) {
 
 	Pixels width_limit;
 
-	if(layout->width == UNSET) {
+	if(is_unset(layout->width)) {
 		width_limit = element->parent->layout.width;
 	} else {
 		width_limit = layout->width;
@@ -182,11 +182,11 @@ LayoutResult hui_text_layout(Element* element, void* data) {
 
 	HUITextCacheValue cached_text = text_render_cached(text, width_limit, style.font_size);
 
-	if (layout->width == UNSET) {
+	if (is_unset(layout->width)) {
 		layout->width = cached_text.actual_width;
 	}
 
-	if(layout->height == UNSET) {
+	if(is_unset(layout->height)) {
 		layout->height = cached_text.height;
 	}
 	return result;

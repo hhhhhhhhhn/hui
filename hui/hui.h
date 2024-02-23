@@ -32,6 +32,7 @@ typedef struct Element {
 
 i64 hui_get_frame_num();
 Element* current_element();
+bool is_unset(Pixels value);
 void push_handler(void (*handler)(Element*, void*), Element* el);
 void hui_init();
 void hui_deinit();
