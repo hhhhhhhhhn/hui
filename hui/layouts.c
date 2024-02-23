@@ -449,9 +449,9 @@ void hui_scroll_handle(Element* el, void* data) {
 		Pixels dy = -GetMouseWheelMoveV().y * 1500 * frame_time;
 
 		*offset += dy;
-		if (*offset < 0) *offset = 0;
-		if (*offset > el->first_child->layout.height - el->layout.height) *offset = el->first_child->layout.height - el->layout.height;
 	}
+	if (*offset < 0) *offset = 0;
+	if (*offset > el->first_child->layout.height - el->layout.height) *offset = el->first_child->layout.height - el->layout.height;
 }
 
 void hui_scroll_start(Pixels* offset) {

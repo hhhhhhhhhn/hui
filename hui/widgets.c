@@ -39,8 +39,9 @@ bool hui_button(ElementId id, str text, TextStyle style) {
 		box_style.background_color = (Color){.r = 255, .g = 0, .b = 0, .a = 255};
 	}
 	hui_box_start(box_style);
-		parent->id = id;
-		push_handler(hui_button_handle, parent);
+		Element* box = current_element();
+		box->id = id;
+		push_handler(hui_button_handle, box);
 		hui_text(text, style);
 	hui_box_end();
 

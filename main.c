@@ -37,12 +37,14 @@ i32 main(void) {
 						hui_fixed_start(800, 200);
 							hui_scroll_start(&inner_scroll);
 								{
-									TextStyle text_style = (TextStyle){.color = RED, .font_size = 20};
+									TextStyle t = (TextStyle){.color = RED, .font_size = 20};
 									hui_stack_start(20);
-										hui_text(lorem, text_style);
-										hui_text(lorem, text_style);
-										hui_text(lorem, text_style);
-										hui_button(1231, STR("Should not work outside scroll"), text_style);
+										hui_text(lorem, t);
+										hui_text(lorem, t);
+										hui_text(lorem, t);
+										if (hui_button(1231, STR("Should not work outside scroll"), t)) {
+											text_style.font_size *= 1.01;
+										}
 									hui_stack_end();
 								}
 							hui_scroll_end();

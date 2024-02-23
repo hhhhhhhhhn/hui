@@ -31,6 +31,7 @@ typedef struct Element {
 } Element;
 
 i64 hui_get_frame_num();
+Element* current_element();
 void push_handler(void (*handler)(Element*, void*), Element* el);
 void hui_init();
 void hui_deinit();

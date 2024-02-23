@@ -2,6 +2,7 @@
 #define _HUI_CORE_C
 
 #include <raylib.h>
+#include <raymath.h>
 #include <time.h>
 #include "../hlib/core.h"
 #include "../hlib/hvec.h"
@@ -29,8 +30,14 @@ usize bounding_box_stack_len = 0;
 
 Element* root;
 
-Element* parent; // At most, one of these two is not NULL
+
+Element* parent; // At most, one of these two is not NULL.
 Element* prev_sibling;
+
+Element* current_element() {
+	if (parent) return parent;
+	return prev_sibling;
+}
 
 ElementId hot_id = 0;
 ElementId active_id = 0;

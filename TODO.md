@@ -1,17 +1,16 @@
 # TODO
 ## Now
-- Add a better way of adding handler, instead of using `parent`
+- Fix inherent text width, wrapping has error on some font sizes
 - Change `== UNSET` with `is_unset()`, to check all negative numbers
 - Add styling options to button
 - Add text input
 - Add grid
-- Text layout caching
-  - TODO: Using multiple tiles for bigger size
 
 ## Later
 - Switcher layout
 
 # Done
+- Add a better way of adding handler, instead of using `parent`
 - Cluster layout
 - Separate files
 - Interactivity
