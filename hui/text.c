@@ -16,7 +16,6 @@ typedef struct {
 	bool used;
 	Pixels height;
 	i64 last_frame; // TODO: Fix wrap
-	Rectangle texture_rec;
 	RenderTexture2D texture; // TODO: Remove
 } HUITextCacheValue;
 
@@ -27,12 +26,24 @@ typedef struct {
 	// TODO: Add font
 } HUITextCacheKey;
 
-#define HUI_TEXT_CACHE_SIZE 500
+#define HUI_TEXT_CACHE_SIZE 256
 HUITextCacheKey keys[HUI_TEXT_CACHE_SIZE] = {0};
 HUITextCacheValue values[HUI_TEXT_CACHE_SIZE] = {0};
 
+usize hui_get_text_cache_cap() {
+	return HUI_TEXT_CACHE_SIZE;
+}
+
+usize hui_get_text_cache_used() {
+	usize count = 0;
+	for(usize i = 0; i < HUI_TEXT_CACHE_SIZE; i++) {
+		if (values[i].used) count++;
+	}
+	return count;
+}
+
 u64 hash_key(HUITextCacheKey key) {
-	return key.hash ^ *(u64*)&key.width ^ *(u64*)&key.font_size;
+	return key.hash ^ *(u64*)&key.font_size; // ^*(u64*)&key.width;
 }
 
 #define HUI_TEXT_CACHE_GIVE_UP 20
@@ -41,7 +52,7 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	i64 frame_num = hui_get_frame_num();
 	usize safety;
 	for(safety = 0; safety < HUI_TEXT_CACHE_GIVE_UP; safety++) {
-		if (values[index].last_frame < hui_get_frame_num()-5) {
+		if (values[index].last_frame < hui_get_frame_num()-1) { // One frame presistance
 			values[index].used = false;
 		}
 		if (!values[index].used) break;
@@ -50,14 +61,30 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	Pixels x = 0;
 	Pixels y = 0;
 
+	// Assuming square glyphs, the height needed to fit al the characters in the given width
+	Pixels tentative_height = text.len * font_size*font_size / width;
+
+	tentative_height += font_size; // Extra margin, because the previous calculation assumes that all lines are filled
+
 	Font font = GetFontDefault();
 	f32 scale_factor = font_size/(f32)font.baseSize;
 
-	if (values[index].texture.texture.width) UnloadRenderTexture(values[index].texture);
-	values[index].texture = LoadRenderTexture(width, 1002);
+	if (
+			(values[index].texture.texture.width > width && values[index].texture.texture.width < 2*width)
+			&& (values[index].texture.texture.height > tentative_height && values[index].texture.texture.height < 2*tentative_height)
+		) {
+		// There already is one and it is roughly the same size, reuse
+	}
+	else {
+		if (values[index].texture.texture.width) {
+			// It exist, but it is too large or too small
+			UnloadRenderTexture(values[index].texture);
+		}
+		values[index].texture = LoadRenderTexture(width*1.5, tentative_height*1.5); // Extra space is added, so that we can reuse then if grown
+	}
 
 	BeginTextureMode(values[index].texture);
-	BeginScissorMode(0, 0, width, 1002); // TODO: More than 100
+	BeginScissorMode(0, 0, width, tentative_height); // TODO: More than 100
 	ClearBackground((Color){0,0,0,0});
 	int codepoint_bytes = 0;
 	for (usize i = 0; i < text.len; i += codepoint_bytes) {
@@ -80,7 +107,6 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	values[index].used = true;
 	values[index].last_frame = frame_num;
 	values[index].height = height;
-	values[index].texture_rec = (Rectangle){ .x = 0, .y = 0, .width = width, .height = -1002};
 	keys[index].hash = text_hash;
 	keys[index].width = width;
 	keys[index].font_size = font_size;
@@ -98,8 +124,13 @@ HUITextCacheValue text_render_cached(str text, Pixels width, Pixels font_size) {
 
 	bool found = false;
 	u64 index = key_hash % HUI_TEXT_CACHE_SIZE;
-	usize safety;
-	for(safety = 0; safety < HUI_TEXT_CACHE_GIVE_UP; safety++) {
+	i64 current_frame = hui_get_frame_num();
+	for(usize safety = 0; safety < HUI_TEXT_CACHE_GIVE_UP; safety++) {
+		if (values[index].used && values[index].last_frame < current_frame-100) {
+			values[index].used = false;
+			UnloadRenderTexture(values[index].texture);
+			values[index].texture = (RenderTexture2D){0};
+		}
 		if (values[index].used && keys[index].hash == text_hash && keys[index].width == width && keys[index].font_size == font_size) {
 			found = true;
 			break;
@@ -152,7 +183,7 @@ void hui_text_draw(Element* element, void* data) {
 	HUITextCacheValue cached_text = text_render_cached(text, element->layout.width, style.font_size);
 	DrawTextureRec(
 		cached_text.texture.texture,
-		cached_text.texture_rec,
+		(Rectangle){.x = 0, .y = cached_text.texture.texture.height - element->layout.height, .width = element->layout.width, .height = -element->layout.height},
 		(Vector2){element->layout.x, element->layout.y},
 		style.color
 	);

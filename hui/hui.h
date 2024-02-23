@@ -76,4 +76,7 @@ typedef struct {
 void hui_text(str text, TextStyle style);
 
 bool hui_button(ElementId id, str text, TextStyle style);
+
+usize hui_get_text_cache_used();
+usize hui_get_text_cache_cap();
 #endif

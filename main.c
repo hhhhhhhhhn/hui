@@ -74,6 +74,9 @@ i32 main(void) {
 											hui_text(STR("Element"), text_style);
 										hui_box_end();
 									}
+								char buf2[32];
+								snprintf(buf2, sizeof(buf2), "Text cache used: %li/%li", hui_get_text_cache_used(), hui_get_text_cache_cap());
+								hui_text(str_from_cstr(buf2), text_style);
 								hui_cluster_end();
 							hui_cluster_end();
 						hui_cluster_end();
