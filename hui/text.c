@@ -27,26 +27,12 @@ typedef struct {
 	// TODO: Add font
 } HUITextCacheKey;
 
-#define HUI_TEXT_CACHE_TILE_WIDTH 2000
-#define HUI_TEXT_CACHE_TILE_HEIGHT 500
-#define HUI_TEXT_CACHE_WIDTH 5
-#define HUI_TEXT_CACHE_HEIGHT 10
-#define HUI_TEXT_CACHE_SIZE (HUI_TEXT_CACHE_WIDTH*HUI_TEXT_CACHE_HEIGHT)
+#define HUI_TEXT_CACHE_SIZE 500
 HUITextCacheKey keys[HUI_TEXT_CACHE_SIZE] = {0};
 HUITextCacheValue values[HUI_TEXT_CACHE_SIZE] = {0};
-RenderTexture2D cache_texture;
-bool cache_init = false;
 
 u64 hash_key(HUITextCacheKey key) {
 	return key.hash ^ *(u64*)&key.width ^ *(u64*)&key.font_size;
-}
-
-void init_cache() {
-	cache_init = true;
-	cache_texture = LoadRenderTexture(HUI_TEXT_CACHE_TILE_WIDTH*HUI_TEXT_CACHE_WIDTH, HUI_TEXT_CACHE_TILE_HEIGHT*HUI_TEXT_CACHE_HEIGHT);
-	BeginTextureMode(cache_texture);
-	ClearBackground(RED);
-	EndTextureMode();
 }
 
 #define HUI_TEXT_CACHE_GIVE_UP 20
@@ -61,17 +47,17 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 		if (!values[index].used) break;
 		index = (index+1) % HUI_TEXT_CACHE_SIZE;
 	}
-
-	int x_init = HUI_TEXT_CACHE_TILE_WIDTH*(index%(HUI_TEXT_CACHE_WIDTH));
-	int y_init = HUI_TEXT_CACHE_TILE_HEIGHT*(index/(HUI_TEXT_CACHE_WIDTH));
-	Pixels x = x_init;
-	Pixels y = y_init;
+	Pixels x = 0;
+	Pixels y = 0;
 
 	Font font = GetFontDefault();
 	f32 scale_factor = font_size/(f32)font.baseSize;
 
-	BeginTextureMode(cache_texture);
-	BeginScissorMode(x_init, y_init, HUI_TEXT_CACHE_TILE_WIDTH, HUI_TEXT_CACHE_TILE_HEIGHT);
+	if (values[index].texture.texture.width) UnloadRenderTexture(values[index].texture);
+	values[index].texture = LoadRenderTexture(width, 1002);
+
+	BeginTextureMode(values[index].texture);
+	BeginScissorMode(0, 0, width, 1002); // TODO: More than 100
 	ClearBackground((Color){0,0,0,0});
 	int codepoint_bytes = 0;
 	for (usize i = 0; i < text.len; i += codepoint_bytes) {
@@ -79,8 +65,8 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 		int index = GetGlyphIndex(font, chr);
 		Pixels chr_width = font.glyphs[index].advanceX ? font.glyphs[index].advanceX : font.recs[index].width;
 		chr_width *= scale_factor;
-		if (x + chr_width > x_init + width) {
-			x = x_init;
+		if (x + chr_width > width) {
+			x = 0;
 			y += font_size;
 		}
 		DrawTextCodepoint(font, chr, (Vector2){ .x = x, .y = y }, font_size, WHITE);
@@ -90,11 +76,11 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	EndScissorMode();
 	EndTextureMode();
 
-	Pixels height = y + font_size - y_init;
+	Pixels height = y + font_size;
 	values[index].used = true;
 	values[index].last_frame = frame_num;
 	values[index].height = height;
-	values[index].texture_rec = (Rectangle){ .x = x_init, .y = -HUI_TEXT_CACHE_TILE_HEIGHT-y_init+height, .width = width, .height = -HUI_TEXT_CACHE_TILE_HEIGHT + height};
+	values[index].texture_rec = (Rectangle){ .x = 0, .y = 0, .width = width, .height = -1002};
 	keys[index].hash = text_hash;
 	keys[index].width = width;
 	keys[index].font_size = font_size;
@@ -102,9 +88,6 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	return &values[index];
 }
 HUITextCacheValue text_render_cached(str text, Pixels width, Pixels font_size) {
-	if (!cache_init) {
-		init_cache();
-	}
 	u64 text_hash = hash_str(text);
 	HUITextCacheKey key = {
 		.hash = text_hash,
@@ -168,7 +151,7 @@ void hui_text_draw(Element* element, void* data) {
 
 	HUITextCacheValue cached_text = text_render_cached(text, element->layout.width, style.font_size);
 	DrawTextureRec(
-		cache_texture.texture,
+		cached_text.texture.texture,
 		cached_text.texture_rec,
 		(Vector2){element->layout.x, element->layout.y},
 		style.color
