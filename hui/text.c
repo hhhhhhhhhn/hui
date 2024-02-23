@@ -15,8 +15,9 @@ u64 hash_str(str text) {
 typedef struct {
 	bool used;
 	Pixels height;
+	Pixels actual_width;
 	i64 last_frame; // TODO: Fix wrap
-	RenderTexture2D texture; // TODO: Remove
+	RenderTexture2D texture;
 } HUITextCacheValue;
 
 typedef struct {
@@ -43,7 +44,11 @@ usize hui_get_text_cache_used() {
 }
 
 u64 hash_key(HUITextCacheKey key) {
-	return key.hash ^ *(u64*)&key.font_size; // ^*(u64*)&key.width;
+	// The font_size and width is not considered for the cache because it makes it so that,
+	// upon resizing or changing the font size slightly, the same slot is used,
+	// which has an already existing texture which most likely can fit the slightly changed result.
+	// See the populate_cache for more details.
+	return key.hash; // ^ *(u64*)&key.font_size ^*(u64*)&key.width;
 }
 
 #define HUI_TEXT_CACHE_GIVE_UP 20
@@ -64,7 +69,7 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	// Assuming square glyphs, the height needed to fit al the characters in the given width
 	Pixels tentative_height = text.len * font_size*font_size / width;
 
-	tentative_height += font_size; // Extra margin, because the previous calculation assumes that all lines are filled
+	tentative_height += font_size; // Extra line of margin, because the previous calculation assumes that all lines are filled.
 
 	Font font = GetFontDefault();
 	f32 scale_factor = font_size/(f32)font.baseSize;
@@ -73,14 +78,16 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 			(values[index].texture.texture.width > width && values[index].texture.texture.width < 2*width)
 			&& (values[index].texture.texture.height > tentative_height && values[index].texture.texture.height < 2*tentative_height)
 		) {
-		// There already is one and it is roughly the same size, reuse
+		// There is already a texture and it is roughly the same size as we need, so we can reuse it.
+		// Becuase we only use the text as a hash, this means that if the font size or the width changes a small bit,
+		// we will likely reuse the same texture, saving the time of Unloading and Loading textures to the GPU.
 	}
 	else {
 		if (values[index].texture.texture.width) {
-			// It exist, but it is too large or too small
+			// There is already a texture, but it is too large or too small
 			UnloadRenderTexture(values[index].texture);
 		}
-		values[index].texture = LoadRenderTexture(width*1.5, tentative_height*1.5); // Extra space is added, so that we can reuse then if grown
+		values[index].texture = LoadRenderTexture(width*1.5, tentative_height*1.5); // Extra space is added, so it can be reused both it the text grows, or shrinks
 	}
 
 	BeginTextureMode(values[index].texture);
@@ -107,6 +114,11 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	values[index].used = true;
 	values[index].last_frame = frame_num;
 	values[index].height = height;
+	if (y == 0) { // If we never wrapped
+		values[index].actual_width = x;
+	} else {
+		values[index].actual_width = width;
+	}
 	keys[index].hash = text_hash;
 	keys[index].width = width;
 	keys[index].font_size = font_size;
@@ -160,14 +172,19 @@ LayoutResult hui_text_layout(Element* element, void* data) {
 	str text = text_data.text;
 	TextStyle style = text_data.style;
 
+	Pixels width_limit;
+
 	if(layout->width == UNSET) {
-		layout->width = MeasureText(TextFormat("%.*s", (int)text.len, text.data), style.font_size); // TODO: Handle different fonts
-		if(layout->width > element->parent->layout.width) {
-			layout->width = element->parent->layout.width;
-		}
+		width_limit = element->parent->layout.width;
+	} else {
+		width_limit = layout->width;
 	}
 
-	HUITextCacheValue cached_text = text_render_cached(text, layout->width, style.font_size);
+	HUITextCacheValue cached_text = text_render_cached(text, width_limit, style.font_size);
+
+	if (layout->width == UNSET) {
+		layout->width = cached_text.actual_width;
+	}
 
 	if(layout->height == UNSET) {
 		layout->height = cached_text.height;
