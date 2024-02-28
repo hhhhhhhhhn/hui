@@ -10,10 +10,13 @@ ifdef profile
 	CFLAGS += -lprofiler
 endif
 
-all: hlib.o main
+all: hlib.o main todo
 
-main: $(wildcard *.c) hlib.o hui.o
+main: main.c hlib.o hui.o
 	cc $(CFLAGS) -o main main.c hlib.o hui.o
+
+todo: todo.c hlib.o hui.o
+	cc $(CFLAGS) -lcurl -o todo todo.c hlib.o hui.o
 
 hlib.o: $(wildcard hlib/*.c)
 	cc $(CFLAGS) -c hlib/hlib.c -o hlib.o

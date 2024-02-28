@@ -8,10 +8,10 @@ str lorem = STR_ARR(
 
 Pixels scroll = 0;
 Pixels inner_scroll = 0;
+strb text = {0};
 i32 counter = 0;
 i32 main(void) {
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
-	SetTargetFPS(60);
 	InitWindow(800, 600, "Example");
 	hui_init();
 
@@ -25,12 +25,14 @@ i32 main(void) {
 		.color = BLACK,
 		.font_size = 20,
 	};
+	text = strb_new();
 	while(!WindowShouldClose()) {
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
 			hui_root_start();
 				hui_scroll_start(&scroll);
 					hui_stack_start(0);
+						hui_text_input(&text, text_style);
 						hui_box_start((BoxStyle){.padding = 10, .border_width = 0, .border_color = {0}, .background_color = {0}});
 							hui_text(STR("Hello, World!"), text_style);
 						hui_box_end();
@@ -39,9 +41,9 @@ i32 main(void) {
 								{
 									TextStyle t = (TextStyle){.color = RED, .font_size = 20};
 									hui_stack_start(20);
-										hui_text(lorem, t);
-										hui_text(lorem, t);
-										hui_text(lorem, t);
+										hui_text_ex(lorem, t, 30);
+										hui_text_ex(lorem, t, 30);
+										hui_text_ex(lorem, t, 30);
 										if (hui_button(1231, STR("Should not work outside scroll"), t)) {
 											text_style.font_size *= 1.01;
 										}

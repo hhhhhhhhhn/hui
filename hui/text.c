@@ -7,7 +7,7 @@ HHashMap hui_text_cache = {0};
 u64 hash_str(str text) {
 	u64 result = 0;
 	for(usize i = 0; i < text.len; i++) {
-		result = result*256 + ((u64)text.data[i]);
+		result ^= result*256 + ((u64)text.data[i]);
 	}
 	return result;
 }
@@ -16,7 +16,9 @@ typedef struct {
 	bool used;
 	Pixels height;
 	Pixels actual_width;
-	i64 last_frame; // TODO: Fix wrap
+	Pixels next_glyph_x;
+	Pixels next_glyph_y;
+	i64 last_frame; // Used for cache invalidation.
 	RenderTexture2D texture;
 } HUITextCacheValue;
 
@@ -24,6 +26,7 @@ typedef struct {
 	u64 hash;
 	Pixels width;
 	Pixels font_size;
+	Pixels first_line_indent;
 	// TODO: Add font
 } HUITextCacheKey;
 
@@ -52,7 +55,7 @@ u64 hash_key(HUITextCacheKey key) {
 }
 
 #define HUI_TEXT_CACHE_GIVE_UP 20
-HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels font_size, u64 key_hash) {
+HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels first_line_indent, Pixels width, Pixels font_size, u64 key_hash) {
 	u64 index = key_hash % HUI_TEXT_CACHE_SIZE;
 	i64 frame_num = hui_get_frame_num();
 	usize safety;
@@ -63,7 +66,7 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 		if (!values[index].used) break;
 		index = (index+1) % HUI_TEXT_CACHE_SIZE;
 	}
-	Pixels x = 0;
+	Pixels x = first_line_indent;
 	Pixels y = 0;
 
 	// Assuming square glyphs, the height needed to fit al the characters in the given width
@@ -114,23 +117,28 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels width, Pixels 
 	values[index].used = true;
 	values[index].last_frame = frame_num;
 	values[index].height = height;
+	values[index].next_glyph_x = x;
+	values[index].next_glyph_y = y;
 	if (y == 0) { // If we never wrapped
 		values[index].actual_width = x;
 	} else {
 		values[index].actual_width = width;
 	}
 	keys[index].hash = text_hash;
+	keys[index].first_line_indent = first_line_indent;
 	keys[index].width = width;
 	keys[index].font_size = font_size;
 
 	return &values[index];
 }
-HUITextCacheValue text_render_cached(str text, Pixels width, Pixels font_size) {
+
+HUITextCacheValue text_render_cached(str text, Pixels first_line_indent, Pixels width, Pixels font_size) {
 	u64 text_hash = hash_str(text);
 	HUITextCacheKey key = {
 		.hash = text_hash,
 		.width = width,
 		.font_size = font_size,
+		.first_line_indent = first_line_indent,
 	};
 	u64 key_hash = hash_key(key);
 
@@ -154,7 +162,7 @@ HUITextCacheValue text_render_cached(str text, Pixels width, Pixels font_size) {
 		value = &values[index];
 	}
 	else {
-		value = populate_cache(text, text_hash, width, font_size, key_hash);
+		value = populate_cache(text, text_hash, first_line_indent, width, font_size, key_hash);
 	}
 	value->last_frame = hui_get_frame_num();
 	return *value;
@@ -163,6 +171,7 @@ HUITextCacheValue text_render_cached(str text, Pixels width, Pixels font_size) {
 typedef struct {
 	str text;
 	TextStyle style;
+	Pixels first_line_indent;
 } HUITextData;
 
 LayoutResult hui_text_layout(Element* element, void* data) {
@@ -180,7 +189,7 @@ LayoutResult hui_text_layout(Element* element, void* data) {
 		width_limit = layout->width;
 	}
 
-	HUITextCacheValue cached_text = text_render_cached(text, width_limit, style.font_size);
+	HUITextCacheValue cached_text = text_render_cached(text, text_data.first_line_indent, width_limit, style.font_size);
 
 	if (is_unset(layout->width)) {
 		layout->width = cached_text.actual_width;
@@ -197,7 +206,7 @@ void hui_text_draw(Element* element, void* data) {
 	str text = text_data.text;
 	TextStyle style = text_data.style;
 
-	HUITextCacheValue cached_text = text_render_cached(text, element->layout.width, style.font_size);
+	HUITextCacheValue cached_text = text_render_cached(text, 0, element->layout.width, style.font_size);
 	DrawTextureRec(
 		cached_text.texture.texture,
 		(Rectangle){.x = 0, .y = cached_text.texture.texture.height - element->layout.height, .width = element->layout.width, .height = -element->layout.height},
@@ -206,12 +215,17 @@ void hui_text_draw(Element* element, void* data) {
 	);
 }
 
-void hui_text(str text, TextStyle style) {
+void hui_text_ex(str text, TextStyle style, Pixels first_line_indent) {
 	Element* element = push_element(sizeof(HUITextData));
 	element->draw = hui_text_draw;
 	element->compute_layout = hui_text_layout;
 	*(HUITextData*)get_element_data(element) = (HUITextData){
 		.text = text,
-		.style = style
+		.style = style,
+		.first_line_indent = first_line_indent,
 	};
+}
+
+void hui_text(str text, TextStyle style) {
+	hui_text_ex(text, style, 0);
 }

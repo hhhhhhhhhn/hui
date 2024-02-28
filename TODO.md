@@ -1,15 +1,17 @@
 # TODO
 ## Now
+- Improve text input
+- Make border and padding a Vec4
 - Deinit text cache on exit
 - Add styling options to button
 - Add nothing element
-- Add text input
 - Add grid
 
 ## Later
 - Switcher layout
 
 # Done
+- Add text input
 - Add a better way of adding handler, instead of using `parent`
 - Cluster layout
 - Separate files

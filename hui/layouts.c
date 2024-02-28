@@ -95,8 +95,10 @@ void hui_box_draw(Element* el, void* data) {
 	Layout* layout = &el->layout;
 	assert(el->first_child);
 
-	if (style.background_color.a != 0 && style.border_color.a != 0) {
+	if (style.background_color.a != 0) {
 		DrawRectangle(layout->x, layout->y, layout->width, layout->height, style.background_color);
+	}
+	if (style.border_color.a != 0) {
 		DrawRectangleLinesEx((Rectangle){.x = layout->x, .y = layout->y, .width = layout->width, .height = layout->height}, style.border_width, style.border_color);
 	}
 	el->first_child->draw(el->first_child, el->first_child+1);
@@ -450,8 +452,8 @@ void hui_scroll_handle(Element* el, void* data) {
 
 		*offset += dy;
 	}
-	if (*offset < 0) *offset = 0;
 	if (*offset > el->first_child->layout.height - el->layout.height) *offset = el->first_child->layout.height - el->layout.height;
+	if (*offset < 0) *offset = 0;
 }
 
 void hui_scroll_start(Pixels* offset) {

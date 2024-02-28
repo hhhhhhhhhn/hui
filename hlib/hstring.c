@@ -212,6 +212,7 @@ void strb_append_view(strb* builder, str view) {
 		strb_resize(builder, builder->cap*2); // TODO: Calculate how many times to resize beforehand
 	}
 	memcpy(builder->data + builder->len, view.data, view.len);
+	builder->len += view.len;
 }
 
 bool strb_append_file(strb* builder, FILE* file) {
