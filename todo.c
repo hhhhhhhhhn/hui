@@ -35,7 +35,7 @@ i32 main(void) {
 				hui_scroll_start(&scroll);
 					hui_stack_start(0);
 						hui_stack_start(0);
-							hui_text_input(&text, text_style);
+							hui_text_input(&text, &text.len, text_style);
 							hui_leftright_start(0);
 								hui_nothing();
 								if (hui_button(1312, STR("Add"), text_style)) {

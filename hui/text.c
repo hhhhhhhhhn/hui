@@ -297,7 +297,7 @@ void hui_cursor_text_draw(Element* element, void* data) {
 	);
 
 	if (hui_get_frame_num() & 16) {
-		DrawRectangle(cached_before.next_glyph_x, cached_before.next_glyph_y, style.font_size/8, style.font_size, GREEN);
+		DrawRectangle(element->layout.x + cached_before.next_glyph_x, element->layout.y + cached_before.next_glyph_y, style.font_size/8, style.font_size, GREEN);
 	}
 }
 

@@ -13,6 +13,7 @@ typedef struct HVec {
 HVec hvec_new_with_cap(usize element_size, usize cap);
 HVec hvec_new(usize element_size);
 void hvec_push(HVec* vec, void* element);
+void hvec_insert(HVec* vec, void* element, usize index);
 void hvec_free(HVec* vec);
 void hvec_clear(HVec* vec);
 void* hvec_at(HVec* vec, usize index);

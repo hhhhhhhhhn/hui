@@ -10,6 +10,7 @@ Pixels scroll = 0;
 Pixels inner_scroll = 0;
 strb text = {0};
 i32 counter = 0;
+usize cursor = 0;
 i32 main(void) {
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, "Example");
@@ -33,7 +34,7 @@ i32 main(void) {
 				hui_scroll_start(&scroll);
 					hui_stack_start(0);
 						hui_cursor_text(lorem, text_style, 100 + counter);
-						hui_text_input(&text, text_style);
+						hui_text_input(&text, &cursor, text_style);
 						hui_box_start((BoxStyle){.padding = 10, .border_width = 0, .border_color = {0}, .background_color = {0}});
 							hui_text(STR("Hello, World!"), text_style);
 						hui_box_end();

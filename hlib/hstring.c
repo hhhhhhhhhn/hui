@@ -284,6 +284,22 @@ void strb_push_char(strb* builder, char c) {
 	builder->len++;
 }
 
+void strb_insert_char(strb* builder, char c, usize index) {
+	if (builder->len >= builder->cap) {
+		strb_resize(builder, builder->cap*2);
+	}
+	assert(index <= builder->len);
+	memcpy(&builder->data[index + 1], &builder->data[index], builder->len - index);
+	builder->data[index] = c;
+	builder->len++;
+}
+
+void strb_remove_char(strb* builder, usize index) {
+	assert(index < builder->len);
+	memcpy(&builder->data[index], &builder->data[index + 1], builder->len - index - 1);
+	builder->len--;
+}
+
 void strb_free(strb* builder) {
 	free(builder->data);
 }

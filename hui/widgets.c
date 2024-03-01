@@ -48,6 +48,10 @@ bool hui_button(ElementId id, str text, TextStyle style) {
 	return button_clicked == id;
 }
 
+
+usize* active_text_input_cursor = NULL;
+usize* hot_text_input_cursor = NULL;
+
 void hui_text_input_handle(Element* el, void* data) {
 	(void) data;
 	strb* builder = (strb*)el->id;
@@ -57,6 +61,7 @@ void hui_text_input_handle(Element* el, void* data) {
 		hot_id = el->id;
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			active_id = el->id;
+			active_text_input_cursor = hot_text_input_cursor;
 		}
 	} else {
 		if(hot_id == el->id) hot_id = 0;
@@ -64,23 +69,32 @@ void hui_text_input_handle(Element* el, void* data) {
 	}
 	if (active_id == el->id) {
 		int key = GetCharPressed();
+		usize* cursor = active_text_input_cursor;
 		if (key > 0) {
-			printf("============== %i =================\n", key);
+			printf("============== %i, %lu =================\n", key, *cursor);
 			if (key == KEY_BACKSPACE && builder->len > 0) {
 				builder->len--;
 			}
 			if (key >= 32 && key <= 126) {
 				assert(builder->cap && "Builder must me initted");
-				strb_push_char(builder, key);
+				strb_insert_char(builder, key, *cursor);
+				(*cursor)++;
 			}
 		}
-		if (IsKeyPressed(KEY_BACKSPACE) && builder->len > 0) {
-			builder->len--;
+		if (IsKeyPressed(KEY_BACKSPACE) && builder->len > 0 && *cursor > 0) {
+			strb_remove_char(builder, *cursor - 1);
+			(*cursor)--;
+		}
+		else if (IsKeyPressed(KEY_LEFT) && *cursor > 0) {
+			(*cursor)--;
+		}
+		else if (IsKeyPressed(KEY_RIGHT) && *cursor < builder->len) {
+			(*cursor)++;
 		}
 	}
 }
 
-void hui_text_input(strb* builder, TextStyle style) {
+void hui_text_input(strb* builder, usize* cursor, TextStyle style) {
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
 		.padding = 15,
@@ -89,28 +103,17 @@ void hui_text_input(strb* builder, TextStyle style) {
 	};
 	if (active_id == (u64)builder) {
 		box_style.background_color = (Color){.r = 150, .g = 150, .b = 150, .a = 255};
+		active_text_input_cursor = cursor;
+	}
+	if (hot_id == (u64)builder) {
+		hot_text_input_cursor = cursor;
 	}
 	hui_box_start(box_style);
 		Element* box = current_element();
 		box->id = (u64)builder;
 		push_handler(hui_text_input_handle, box);
 
-		str view;
-		if (active_id == (u64)builder) {
-			// Selected, put underscore on the end
-			assert(builder->cap && "Builder must me initted");
-			if(hui_get_frame_num() & 16) {
-				strb_push_char(builder, '_');
-			} else {
-				strb_push_char(builder, ' ');
-			}
-			builder->len--;
-			view = str_from_strb(builder);
-			view.len++; // Include the underscore
-		}
-		else {
-			view = str_from_strb(builder);
-		}
-		hui_text(view, style);
+		str view = str_from_strb(builder);
+		hui_cursor_text(view, style, *cursor);
 	hui_box_end();
 }
