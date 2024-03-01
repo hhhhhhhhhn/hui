@@ -78,6 +78,7 @@ typedef struct {
 
 void hui_text(str text, TextStyle style);
 void hui_text_ex(str text, TextStyle style, Pixels first_line_indent);
+void hui_cursor_text(str text, TextStyle style, usize cursor);
 
 bool hui_button(ElementId id, str text, TextStyle style);
 void hui_text_input(strb* builder, TextStyle style);

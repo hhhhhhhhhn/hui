@@ -32,6 +32,7 @@ i32 main(void) {
 			hui_root_start();
 				hui_scroll_start(&scroll);
 					hui_stack_start(0);
+						hui_cursor_text(lorem, text_style, 100 + counter);
 						hui_text_input(&text, text_style);
 						hui_box_start((BoxStyle){.padding = 10, .border_width = 0, .border_color = {0}, .background_color = {0}});
 							hui_text(STR("Hello, World!"), text_style);

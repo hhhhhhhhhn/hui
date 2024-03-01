@@ -151,7 +151,7 @@ HUITextCacheValue text_render_cached(str text, Pixels first_line_indent, Pixels 
 			UnloadRenderTexture(values[index].texture);
 			values[index].texture = (RenderTexture2D){0};
 		}
-		if (values[index].used && keys[index].hash == text_hash && keys[index].width == width && keys[index].font_size == font_size) {
+		if (values[index].used && keys[index].hash == text_hash && keys[index].width == width && keys[index].font_size == font_size && keys[index].first_line_indent == first_line_indent) {
 			found = true;
 			break;
 		}
@@ -206,10 +206,10 @@ void hui_text_draw(Element* element, void* data) {
 	str text = text_data.text;
 	TextStyle style = text_data.style;
 
-	HUITextCacheValue cached_text = text_render_cached(text, 0, element->layout.width, style.font_size);
+	HUITextCacheValue cached_text = text_render_cached(text, text_data.first_line_indent, element->layout.width, style.font_size);
 	DrawTextureRec(
 		cached_text.texture.texture,
-		(Rectangle){.x = 0, .y = cached_text.texture.texture.height - element->layout.height, .width = element->layout.width, .height = -element->layout.height},
+		(Rectangle){.x = 0, .y = cached_text.texture.texture.height - cached_text.height, .width = element->layout.width, .height = -cached_text.height},
 		(Vector2){element->layout.x, element->layout.y},
 		style.color
 	);
@@ -228,4 +228,86 @@ void hui_text_ex(str text, TextStyle style, Pixels first_line_indent) {
 
 void hui_text(str text, TextStyle style) {
 	hui_text_ex(text, style, 0);
+}
+
+typedef struct {
+	str text;
+	TextStyle style;
+	usize cursor;
+} HUICursorTextData;
+
+Pixels max(Pixels a, Pixels b) {
+	return a > b ? a : b;
+}
+
+LayoutResult hui_cursor_text_layout(Element* element, void* data) {
+	LayoutResult result = LAYOUT_OK;
+	Layout* layout = &element->layout;
+	HUICursorTextData text_data = *(HUICursorTextData*)data;
+	str text = text_data.text;
+	TextStyle style = text_data.style;
+	usize cursor = text_data.cursor;
+
+	Pixels width_limit;
+
+	if(is_unset(layout->width)) {
+		width_limit = element->parent->layout.width;
+	} else {
+		width_limit = layout->width;
+	}
+
+	str before_cursor = str_slice(text, 0, cursor);
+	str after_cursor = str_slice(text, cursor, text.len);
+
+	HUITextCacheValue cached_before = text_render_cached(before_cursor, 0, width_limit, style.font_size);
+	HUITextCacheValue cached_after = text_render_cached(after_cursor, cached_before.next_glyph_x, width_limit, style.font_size);
+
+	if (is_unset(layout->width)) {
+		layout->width = max(cached_before.actual_width, cached_after.actual_width);
+	}
+
+	if(is_unset(layout->height)) {
+		layout->height = cached_before.next_glyph_y + cached_after.height;
+	}
+	return result;
+}
+
+void hui_cursor_text_draw(Element* element, void* data) {
+	HUICursorTextData text_data = *(HUICursorTextData*)data;
+	str text = text_data.text;
+	TextStyle style = text_data.style;
+	usize cursor = text_data.cursor;
+
+	str before_cursor = str_slice(text, 0, cursor);
+	str after_cursor = str_slice(text, cursor, text.len);
+
+	HUITextCacheValue cached_before = text_render_cached(before_cursor, 0, element->layout.width, style.font_size);
+	HUITextCacheValue cached_after = text_render_cached(after_cursor, cached_before.next_glyph_x, element->layout.width, style.font_size);
+	DrawTextureRec(
+		cached_before.texture.texture,
+		(Rectangle){.x = 0, .y = cached_before.texture.texture.height - cached_before.height, .width = element->layout.width, .height = -cached_before.height},
+		(Vector2){element->layout.x, element->layout.y},
+		BLUE
+	);
+	DrawTextureRec(
+		cached_after.texture.texture,
+		(Rectangle){.x = 0, .y = cached_after.texture.texture.height - cached_after.height, .width = element->layout.width, .height = -cached_after.height},
+		(Vector2){element->layout.x, element->layout.y + cached_before.next_glyph_y},
+		RED
+	);
+
+	if (hui_get_frame_num() & 16) {
+		DrawRectangle(cached_before.next_glyph_x, cached_before.next_glyph_y, style.font_size/8, style.font_size, GREEN);
+	}
+}
+
+void hui_cursor_text(str text, TextStyle style, usize cursor) {
+	Element* element = push_element(sizeof(HUITextData));
+	element->draw = hui_cursor_text_draw;
+	element->compute_layout = hui_cursor_text_layout;
+	*(HUICursorTextData*)get_element_data(element) = (HUICursorTextData){
+		.text = text,
+		.style = style,
+		.cursor = cursor
+	};
 }
