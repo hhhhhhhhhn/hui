@@ -52,6 +52,10 @@ bool hui_button(ElementId id, str text, TextStyle style) {
 usize* active_text_input_cursor = NULL;
 usize* hot_text_input_cursor = NULL;
 
+bool is_key_pressed_with_repetition(int key) {
+	return IsKeyPressed(key) || IsKeyPressedRepeat(key);
+}
+
 void hui_text_input_handle(Element* el, void* data) {
 	(void) data;
 	strb* builder = (strb*)el->id;
@@ -81,14 +85,14 @@ void hui_text_input_handle(Element* el, void* data) {
 				(*cursor)++;
 			}
 		}
-		if (IsKeyPressed(KEY_BACKSPACE) && builder->len > 0 && *cursor > 0) {
+		if (is_key_pressed_with_repetition(KEY_BACKSPACE) && builder->len > 0 && *cursor > 0) {
 			strb_remove_char(builder, *cursor - 1);
 			(*cursor)--;
 		}
-		else if (IsKeyPressed(KEY_LEFT) && *cursor > 0) {
+		else if (is_key_pressed_with_repetition(KEY_LEFT) && *cursor > 0) {
 			(*cursor)--;
 		}
-		else if (IsKeyPressed(KEY_RIGHT) && *cursor < builder->len) {
+		else if (is_key_pressed_with_repetition(KEY_RIGHT) && *cursor < builder->len) {
 			(*cursor)++;
 		}
 	}
