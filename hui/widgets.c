@@ -51,6 +51,7 @@ bool hui_button(ElementId id, str text, TextStyle style) {
 
 usize* active_text_input_cursor = NULL;
 usize* hot_text_input_cursor = NULL;
+u64 active_text_input_last_key_pressed = 0;
 
 bool is_key_pressed_with_repetition(int key) {
 	return IsKeyPressed(key) || IsKeyPressedRepeat(key);
@@ -74,8 +75,10 @@ void hui_text_input_handle(Element* el, void* data) {
 	if (active_id == el->id) {
 		int key = GetCharPressed();
 		usize* cursor = active_text_input_cursor;
+		if (*cursor > builder->len) {
+			*cursor = builder->len;
+		}
 		if (key > 0) {
-			printf("============== %i, %lu =================\n", key, *cursor);
 			if (key == KEY_BACKSPACE && builder->len > 0) {
 				builder->len--;
 			}
@@ -95,10 +98,13 @@ void hui_text_input_handle(Element* el, void* data) {
 		else if (is_key_pressed_with_repetition(KEY_RIGHT) && *cursor < builder->len) {
 			(*cursor)++;
 		}
+
+		active_text_input_last_key_pressed = GetKeyPressed();
 	}
 }
 
-void hui_text_input(strb* builder, usize* cursor, TextStyle style) {
+u64 hui_text_input(strb* builder, usize* cursor, TextStyle style) {
+	u64 result = 0;
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
 		.padding = 15,
@@ -106,8 +112,8 @@ void hui_text_input(strb* builder, usize* cursor, TextStyle style) {
 		.border_width = 5,
 	};
 	if (active_id == (u64)builder) {
-		box_style.background_color = (Color){.r = 150, .g = 150, .b = 150, .a = 255};
 		active_text_input_cursor = cursor;
+		result = active_text_input_last_key_pressed;
 	}
 	if (hot_id == (u64)builder) {
 		hot_text_input_cursor = cursor;
@@ -118,6 +124,11 @@ void hui_text_input(strb* builder, usize* cursor, TextStyle style) {
 		push_handler(hui_text_input_handle, box);
 
 		str view = str_from_strb(builder);
-		hui_cursor_text(view, style, *cursor);
+		if (active_id == (u64)builder) {
+			hui_cursor_text(view, style, *cursor);
+		} else {
+			hui_text(view, style);
+		}
 	hui_box_end();
+	return result;
 }
