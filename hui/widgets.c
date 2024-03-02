@@ -28,9 +28,9 @@ void hui_button_handle(Element* el, void* data) {
 bool hui_button(ElementId id, str text, TextStyle style) {
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
-		.padding = 15,
+		.padding = msymmetric(15),
 		.border_color = {.r = 0, .g = 0, .b = 0, .a = 255},
-		.border_width = 5,
+		.border = msymmetric(5),
 	};
 	if (active_id == id) {
 		box_style.background_color = (Color){.r = 100, .g = 0, .b = 0, .a = 255};
@@ -107,9 +107,9 @@ u64 hui_text_input(strb* builder, usize* cursor, TextStyle style) {
 	u64 result = 0;
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
-		.padding = 15,
+		.padding = msymmetric(15),
 		.border_color = {.r = 0, .g = 0, .b = 0, .a = 255},
-		.border_width = 5,
+		.border = msymmetric(5),
 	};
 	if (active_id == (u64)builder) {
 		active_text_input_cursor = cursor;

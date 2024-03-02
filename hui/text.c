@@ -60,7 +60,7 @@ HUITextCacheValue* populate_cache(str text, u64 text_hash, Pixels first_line_ind
 	i64 frame_num = hui_get_frame_num();
 	usize safety;
 	for(safety = 0; safety < HUI_TEXT_CACHE_GIVE_UP; safety++) {
-		if (values[index].last_frame < hui_get_frame_num()-1) { // One frame presistance
+		if (values[index].last_frame < hui_get_frame_num()-2) { // Two frame presistance
 			values[index].used = false;
 		}
 		if (!values[index].used) break;

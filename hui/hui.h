@@ -52,10 +52,22 @@ void hui_stack_start(Pixels gap);
 void hui_stack_end();
 
 typedef struct {
+	Pixels left;
+	Pixels right;
+	Pixels top;
+	Pixels bottom;
+} Margin;
+
+static inline Margin msymmetric(Pixels size) { return (Margin) {size, size, size, size}; }
+static inline Margin mvertical(Pixels size) { return (Margin) {0, 0, size, size}; }
+static inline Margin mhorizontal(Pixels size) { return (Margin) {size, size, 0, 0}; }
+static inline Margin mnone() { return (Margin) {0, 0, 0, 0}; }
+
+typedef struct {
 	Color  background_color;
-	Pixels padding;
+	Margin padding;
 	Color  border_color;
-	Pixels border_width;
+	Margin border;
 } BoxStyle;
 
 void hui_box_start(BoxStyle style);

@@ -18,9 +18,9 @@ i32 main(void) {
 
 	BoxStyle box_style = {
 		.background_color = {.r = 200, .g = 200, .b = 200, .a = 255},
-		.padding = 15,
+		.padding = msymmetric(15),
 		.border_color = {.r = 0, .g = 0, .b = 0, .a = 255},
-		.border_width = 5,
+		.border = msymmetric(5),
 	};
 	TextStyle text_style = {
 		.color = BLACK,
@@ -38,7 +38,7 @@ i32 main(void) {
 						if (key == KEY_ENTER) {
 							text.len = 0;
 						}
-						hui_box_start((BoxStyle){.padding = 10, .border_width = 0, .border_color = {0}, .background_color = {0}});
+						hui_box_start((BoxStyle){.padding = msymmetric(10), .border = mnone(), .border_color = {0}, .background_color = {0}});
 							hui_text(STR("Hello, World!"), text_style);
 						hui_box_end();
 						hui_fixed_start(800, 200);

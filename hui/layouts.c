@@ -39,6 +39,14 @@ void hui_stack_start(Pixels gap) {
 	start_adding_children();
 }
 
+Margin margin_add(Margin a, Margin b) {
+	return (Margin) {
+		.left   = a.left + b.left,
+		.right  = a.right + b.right,
+		.top    = a.top + b.top,
+		.bottom = a.bottom + b.bottom,
+	};
+}
 
 void hui_stack_end() {
 	stop_adding_children();
@@ -47,7 +55,9 @@ LayoutResult hui_box_layout(Element* el, void* data) {
 	BoxStyle style = *(BoxStyle*)data;
 	LayoutResult result = LAYOUT_OK;
 	Layout* layout = &el->layout;
-	Pixels total_padding = style.padding + style.border_width;
+	Margin total_padding = margin_add(style.padding, style.border);
+	Pixels total_horizontal_padding = total_padding.left + total_padding.right;
+	Pixels total_vertical_padding = total_padding.top + total_padding.bottom;
 
 	if (el->first_child == NULL || el->first_child->next_sibling != NULL) {
 		panic("Box must have exactly one child");
@@ -57,23 +67,23 @@ LayoutResult hui_box_layout(Element* el, void* data) {
 	bool height_was_set_by_parent = !is_unset(layout->height);
 
 	if (width_was_set_by_parent) {
-		el->first_child->layout.width = layout->width - 2*total_padding;
+		el->first_child->layout.width = layout->width - total_horizontal_padding;
 	} else {
-		layout->width = el->parent->layout.width - 2*total_padding; // Temporary, until children's width is computed
+		layout->width = el->parent->layout.width - total_horizontal_padding; // Temporary, until children's width is computed
 	}
 	if (height_was_set_by_parent) {
-		el->first_child->layout.height = layout->height - 2*total_padding;
+		el->first_child->layout.height = layout->height - total_vertical_padding;
 	} else {
-		layout->height = el->parent->layout.height - 2*total_padding; // Temporary, until children's height is computed
+		layout->height = el->parent->layout.height - total_vertical_padding; // Temporary, until children's height is computed
 	}
 
 	if (!is_unset(layout->x)) {
-		el->first_child->layout.x = layout->x + total_padding;
+		el->first_child->layout.x = layout->x + total_padding.left;
 	} else {
 		result |= LAYOUT_ASK_PARENT;
 	}
 	if (!is_unset(layout->y)) {
-		el->first_child->layout.y = layout->y + total_padding;
+		el->first_child->layout.y = layout->y + total_padding.top;
 	} else {
 		result |= LAYOUT_ASK_PARENT;
 	}
@@ -81,10 +91,10 @@ LayoutResult hui_box_layout(Element* el, void* data) {
 	el->first_child->compute_layout(el->first_child, el->first_child+1);
 
 	if (!width_was_set_by_parent) {
-		layout->width = el->first_child->layout.width + 2*total_padding;
+		layout->width = el->first_child->layout.width + total_horizontal_padding;
 	}
 	if (!height_was_set_by_parent) {
-		layout->height = el->first_child->layout.height + 2*total_padding;
+		layout->height = el->first_child->layout.height + total_vertical_padding;
 	}
 
 	return result;
@@ -99,7 +109,8 @@ void hui_box_draw(Element* el, void* data) {
 		DrawRectangle(layout->x, layout->y, layout->width, layout->height, style.background_color);
 	}
 	if (style.border_color.a != 0) {
-		DrawRectangleLinesEx((Rectangle){.x = layout->x, .y = layout->y, .width = layout->width, .height = layout->height}, style.border_width, style.border_color);
+		// TODO: Handle different borders correctly
+		DrawRectangleLinesEx((Rectangle){.x = layout->x, .y = layout->y, .width = layout->width, .height = layout->height}, style.border.top, style.border_color);
 	}
 	el->first_child->draw(el->first_child, el->first_child+1);
 }
