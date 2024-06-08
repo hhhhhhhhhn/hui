@@ -189,7 +189,7 @@ void hui_center_end() {
 
 LayoutResult hui_cluster_layout(Element* el, void* data) {
 	// How it should work:
-	// - If width not set, simply put all the children in a row
+	// - If width not set, take the parent's width as the limit
 	// - If width is set, then for each child
 	//   - First, try intrinsic sizing
 	//   - If it would go over the width adding it after the other elements in its row, then put it next row
@@ -224,7 +224,12 @@ LayoutResult hui_cluster_layout(Element* el, void* data) {
 		child->layout.y = y;
 		child->compute_layout(child, child+1);
 
-		if (x + child->layout.width > layout->x + width_limit) {
+		// I love floating point error!!!
+		// This +0.1 is needed because otherwise, calling this function
+		// to calculate width/height, then calling it again with the width/height
+		// set but with different x/y values would give different results
+		// (makes sense, beacuse we are adding them to different x's)
+		if (x + child->layout.width > layout->x + width_limit + 0.1) {
 			// Advance a row
 			if (x - padding - layout->x > max_width) {
 				max_width = x - padding - layout->x;
