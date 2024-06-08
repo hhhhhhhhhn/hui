@@ -88,7 +88,7 @@ i64 hui_get_frame_num() {
 }
 
 bool is_unset(Pixels value) {
-	return value < 0;
+	return value == UNSET;
 }
 
 void hui_root_start() {

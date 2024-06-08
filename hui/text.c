@@ -1,8 +1,5 @@
 #include "hui.h"
 #include "core.c"
-#include "../hlib/hhashmap.h"
-
-HHashMap hui_text_cache = {0};
 
 u64 hash_str(str text) {
 	u64 result = 0;

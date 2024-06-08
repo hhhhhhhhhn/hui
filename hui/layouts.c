@@ -51,6 +51,7 @@ Margin margin_add(Margin a, Margin b) {
 void hui_stack_end() {
 	stop_adding_children();
 }
+
 LayoutResult hui_box_layout(Element* el, void* data) {
 	BoxStyle style = *(BoxStyle*)data;
 	LayoutResult result = LAYOUT_OK;
