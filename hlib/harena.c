@@ -60,6 +60,7 @@ void* harena_alloc(HArena* arena, usize size) {
 	}
 
 	unreachable();
+	return NULL;
 }
 
 void harena_clear(HArena* arena) {

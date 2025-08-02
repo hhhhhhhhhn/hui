@@ -8,7 +8,7 @@
 typedef f32 Pixels;
 typedef u64 ElementId;
 
-static const Pixels UNSET = -15001;
+#define UNSET -15001
 
 typedef Rectangle Layout;
 
