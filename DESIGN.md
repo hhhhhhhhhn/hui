@@ -17,8 +17,9 @@ Rules:
   - Elements should not set their own position, or depend on it,
     as parents may set them after the layout is done.
 - A child may never change the parent's layout, but it can read it and use it.
-  - If a child requires a property of the parent that hasn't been set yet,
+  - DEPRECATED: If a child requires a property of the parent that hasn't been set yet,
     then it should return ASK_PARENT.
+    - Instead, children must learn to use what they are given, or panic
 - Parents should always set known properties of themselves and their children as
   soon as possible, and can set temporary values which are then changed if needed.
   - For example, the cluster layout starts by setting itself a temporary

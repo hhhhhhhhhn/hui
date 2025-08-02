@@ -42,7 +42,7 @@ Element* current_element() {
 ElementId hot_id = 0;
 ElementId active_id = 0;
 
-LayoutResult hui_root_layout(Element* el, void* data) {
+void hui_root_layout(Element* el, void* data) {
 	(void) data;
 	if(!el->first_child || el->first_child->next_sibling) {
 		panic("Root must have exactly one child");
@@ -50,7 +50,6 @@ LayoutResult hui_root_layout(Element* el, void* data) {
 	Element* child = el->first_child;
 	child->layout = el->layout;
 	child->compute_layout(child, child+1);
-	return LAYOUT_OK;
 }
 
 void hui_root_draw(Element* el, void* data) {
@@ -191,22 +190,18 @@ void stop_adding_children() {
 	}
 }
 
-LayoutResult hui_block_layout(Element* element, void* data) {
+void hui_block_layout(Element* element, void* data) {
 	(void) data;
-	LayoutResult result = LAYOUT_OK;
 	Layout* layout = &element->layout;
 	if(layout->width == UNSET) {
-		if(element->parent->layout.width == UNSET) {
-			result |= LAYOUT_ASK_PARENT;
-		}
-		else {
+		if(element->parent->layout.width != UNSET) {
 			layout->width = element->parent->layout.width * 0.5;
 		}
+
 	}
 	if(layout->height == UNSET) {
 		layout->height = 100;
 	}
-	return result;
 }
 
 void hui_block_draw(Element* element, void* data) {
@@ -223,7 +218,7 @@ void hui_block() {
 	*color = RED;
 }
 
-LayoutResult hui_nothing_layout(Element* element, void* data) {
+void hui_nothing_layout(Element* element, void* data) {
 	(void) data;
 	if(element->layout.width == UNSET) {
 		element->layout.width = 0;
@@ -231,7 +226,6 @@ LayoutResult hui_nothing_layout(Element* element, void* data) {
 	if(element->layout.height == UNSET) {
 		element->layout.height = 0;
 	}
-	return LAYOUT_OK;
 }
 
 void hui_nothing_draw(Element* element, void* data) {

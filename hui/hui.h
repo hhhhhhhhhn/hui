@@ -11,12 +11,6 @@ typedef u64 ElementId;
 static const Pixels UNSET = -15001;
 
 typedef Rectangle Layout;
-typedef u8 LayoutResult;
-
-static const LayoutResult LAYOUT_OK = 0;
-static const LayoutResult LAYOUT_ASK_PARENT = 1;
-static const LayoutResult LAYOUT_ASK_CHILDREN = 2;
-static const LayoutResult LAYOUT_ASK_ALL = LAYOUT_ASK_PARENT | LAYOUT_ASK_CHILDREN;
 
 typedef struct Element {
 	ElementId       id;
@@ -26,7 +20,7 @@ typedef struct Element {
 	struct Element* prev_sibling;
 	Layout          layout;
 	Layout*         bounding_box;
-	LayoutResult    (*compute_layout)(struct Element*, void*);
+	void            (*compute_layout)(struct Element*, void*);
 	void            (*draw)(struct Element*, void*);
 } Element;
 

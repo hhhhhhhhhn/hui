@@ -1,9 +1,8 @@
 #include "hui.h"
 #include "core.c"
 
-LayoutResult hui_stack_layout(Element* el, void* data) {
+void hui_stack_layout(Element* el, void* data) {
 	Pixels gap = *(Pixels*)data;
-	LayoutResult result = LAYOUT_OK;
 
 	if (is_unset(el->layout.width)) {
 		el->layout.width = el->parent->layout.width;
@@ -27,8 +26,6 @@ LayoutResult hui_stack_layout(Element* el, void* data) {
 	if (is_unset(el->layout.height)) {
 		el->layout.height = y - el->layout.y - gap;
 	}
-
-	return result;
 }
 
 void hui_stack_start(Pixels gap) {
@@ -52,9 +49,8 @@ void hui_stack_end() {
 	stop_adding_children();
 }
 
-LayoutResult hui_box_layout(Element* el, void* data) {
+void hui_box_layout(Element* el, void* data) {
 	BoxStyle style = *(BoxStyle*)data;
-	LayoutResult result = LAYOUT_OK;
 	Layout* layout = &el->layout;
 	Margin total_padding = margin_add(style.padding, style.border);
 	Pixels total_horizontal_padding = total_padding.left + total_padding.right;
@@ -80,13 +76,9 @@ LayoutResult hui_box_layout(Element* el, void* data) {
 
 	if (!is_unset(layout->x)) {
 		el->first_child->layout.x = layout->x + total_padding.left;
-	} else {
-		result |= LAYOUT_ASK_PARENT;
 	}
 	if (!is_unset(layout->y)) {
 		el->first_child->layout.y = layout->y + total_padding.top;
-	} else {
-		result |= LAYOUT_ASK_PARENT;
 	}
 
 	el->first_child->compute_layout(el->first_child, el->first_child+1);
@@ -97,8 +89,6 @@ LayoutResult hui_box_layout(Element* el, void* data) {
 	if (!height_was_set_by_parent) {
 		layout->height = el->first_child->layout.height + total_vertical_padding;
 	}
-
-	return result;
 }
 
 void hui_box_draw(Element* el, void* data) {
@@ -128,11 +118,11 @@ void hui_box_end() {
 	stop_adding_children();
 }
 
-LayoutResult hui_center_layout(Element* el, void* data) {
+void hui_center_layout(Element* el, void* data) {
 	Layout* layout = &el->layout;
 	Pixels padding = *(Pixels*)data;
 	if (el->first_child == NULL || el->first_child->next_sibling != NULL) {
-		panic("Box must have exactly one child");
+		panic("Center must have exactly one child");
 	}
 
 	bool width_was_set_by_parent = !is_unset(layout->width);
@@ -151,7 +141,7 @@ LayoutResult hui_center_layout(Element* el, void* data) {
 	}
 
 	el->first_child->layout.y = layout->y;
-	LayoutResult child_layout_result = el->first_child->compute_layout(el->first_child, el->first_child+1);
+	el->first_child->compute_layout(el->first_child, el->first_child+1);
 
 	layout->width = padded_width;
 
@@ -161,11 +151,7 @@ LayoutResult hui_center_layout(Element* el, void* data) {
 
 	el->first_child->layout.x = layout->x + (padded_width - el->first_child->layout.width)/2;
 
-	if (child_layout_result & LAYOUT_ASK_PARENT) {
-		el->first_child->compute_layout(el->first_child, el->first_child+1);
-	}
-
-	return LAYOUT_OK;
+	el->first_child->compute_layout(el->first_child, el->first_child+1);
 }
 
 void hui_center_draw(Element* el, void* data) {
@@ -187,7 +173,7 @@ void hui_center_end() {
 	stop_adding_children();
 }
 
-LayoutResult hui_cluster_layout(Element* el, void* data) {
+void hui_cluster_layout(Element* el, void* data) {
 	// How it should work:
 	// - If width not set, take the parent's width as the limit
 	// - If width is set, then for each child
@@ -198,7 +184,6 @@ LayoutResult hui_cluster_layout(Element* el, void* data) {
 	// - Padding is only inside the cluster. There should be no padding between the top left element and the parent
 	Layout* layout = &el->layout;
 	Pixels padding = *(Pixels*)data;
-	LayoutResult result = LAYOUT_OK;
 	bool width_was_set_by_parent = !is_unset(layout->width);
 	bool height_was_set_by_parent = !is_unset(layout->height);
 
@@ -269,14 +254,6 @@ LayoutResult hui_cluster_layout(Element* el, void* data) {
 		}
 		layout->width = max_width;
 	}
-
-	if (!layout->x) {
-		result |= LAYOUT_ASK_PARENT;
-	}
-	if (!layout->y) {
-		result |= LAYOUT_ASK_PARENT;
-	}
-	return result;
 }
 
 void hui_cluster_draw(Element* el, void* data) {
@@ -300,10 +277,9 @@ void hui_cluster_end() {
 	stop_adding_children();
 }
 
-LayoutResult hui_leftright_layout(Element* el, void* data) {
+void hui_leftright_layout(Element* el, void* data) {
 	Layout* layout = &el->layout;
 	Pixels padding = *(Pixels*)data;
-	LayoutResult result = LAYOUT_OK;
 
 	if(!el->first_child || !el->first_child->next_sibling || el->first_child->next_sibling->next_sibling) {
 		panic("Leftright must have exactly two children.");
@@ -360,8 +336,6 @@ LayoutResult hui_leftright_layout(Element* el, void* data) {
 			layout->height = right->layout.height;
 		}
 	}
-
-	return result;
 }
 
 void hui_leftright_draw(Element* el, void* data) {
@@ -384,7 +358,7 @@ void hui_leftright_end() {
 	stop_adding_children();
 }
 
-LayoutResult hui_fixed_layout(Element* el, void* data) {
+void hui_fixed_layout(Element* el, void* data) {
 	Layout* layout = &el->layout;
 	Pixels* size = (Pixels*)data;
 	if (!el->first_child || el->first_child->next_sibling) {
@@ -397,7 +371,6 @@ LayoutResult hui_fixed_layout(Element* el, void* data) {
 	el->first_child->layout.width = size[0];
 	el->first_child->layout.height = size[1];
 	el->first_child->compute_layout(el->first_child, el->first_child+1);
-	return LAYOUT_OK;
 }
 
 void hui_fixed_draw(Element* el, void* data) {
@@ -418,10 +391,9 @@ void hui_fixed_end() {
 	stop_adding_children();
 }
 
-LayoutResult hui_scroll_layout(Element* el, void* data) {
+void hui_scroll_layout(Element* el, void* data) {
 	Pixels* offset = *(Pixels**)data;
 	Layout* layout = &el->layout;
-	LayoutResult result = LAYOUT_OK;
 
 	if(!el->first_child || el->first_child->next_sibling) {
 		panic("hui_scroll must have exactly one child");
@@ -439,7 +411,6 @@ LayoutResult hui_scroll_layout(Element* el, void* data) {
 	if(is_unset(layout->height)) {
 		layout->height = child->layout.height;
 	}
-	return result;
 }
 
 // These variables are used so that only one scroll is handled with the wheel at a time

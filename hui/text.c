@@ -171,8 +171,7 @@ typedef struct {
 	Pixels first_line_indent;
 } HUITextData;
 
-LayoutResult hui_text_layout(Element* element, void* data) {
-	LayoutResult result = LAYOUT_OK;
+void hui_text_layout(Element* element, void* data) {
 	Layout* layout = &element->layout;
 	HUITextData text_data = *(HUITextData*)data;
 	str text = text_data.text;
@@ -195,7 +194,6 @@ LayoutResult hui_text_layout(Element* element, void* data) {
 	if(is_unset(layout->height)) {
 		layout->height = cached_text.height;
 	}
-	return result;
 }
 
 void hui_text_draw(Element* element, void* data) {
@@ -237,8 +235,7 @@ Pixels max(Pixels a, Pixels b) {
 	return a > b ? a : b;
 }
 
-LayoutResult hui_cursor_text_layout(Element* element, void* data) {
-	LayoutResult result = LAYOUT_OK;
+void hui_cursor_text_layout(Element* element, void* data) {
 	Layout* layout = &element->layout;
 	HUICursorTextData text_data = *(HUICursorTextData*)data;
 	str text = text_data.text;
@@ -266,7 +263,6 @@ LayoutResult hui_cursor_text_layout(Element* element, void* data) {
 	if(is_unset(layout->height)) {
 		layout->height = cached_before.next_glyph_y + cached_after.height;
 	}
-	return result;
 }
 
 void hui_cursor_text_draw(Element* element, void* data) {
