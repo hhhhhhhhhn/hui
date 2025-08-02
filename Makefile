@@ -18,10 +18,10 @@ main: main.c hlib.o hui.o
 todo: todo.c hlib.o hui.o
 	cc $(CFLAGS) -lcurl -o todo todo.c hlib.o hui.o
 
-hlib.o: $(wildcard hlib/*.c)
+hlib.o: $(wildcard hlib/*.c) $(wildcard hlib/*.h)
 	cc $(CFLAGS) -c hlib/hlib.c -o hlib.o
 
-hui.o: $(wildcard hui/*.c)
+hui.o: $(wildcard hui/*.c) $(wildcard hui/*.h)
 	cc $(CFLAGS) -c hui/lib.c -o hui.o
 
 clean:

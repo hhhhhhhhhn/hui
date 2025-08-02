@@ -1,7 +1,7 @@
 # TODO
 ## Now
-- Deinit text cache on exit
 - Move children to new position without calling layout again
+- Fix memory alignment
 
 ## Later
 - Switcher layout
@@ -27,3 +27,4 @@
   - Maybe a similar system for interaction? Like an active interaction Rect
 - Fix inherent text width, wrapping has error on some font sizes
 - Change `== UNSET` with `is_unset()`, to check all negative numbers
+- Deinit text cache on exit

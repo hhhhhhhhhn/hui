@@ -4,7 +4,7 @@
 u64 hash_str(str text) {
 	u64 result = 0;
 	for(usize i = 0; i < text.len; i++) {
-		result ^= result*256 + ((u64)text.data[i]);
+		result ^= (~result)*256 + ((u64)text.data[i]);
 	}
 	return result;
 }
@@ -41,6 +41,16 @@ usize hui_get_text_cache_used() {
 		if (values[i].used) count++;
 	}
 	return count;
+}
+
+void hui_text_cache_free() {
+	for(usize i = 0; i < HUI_TEXT_CACHE_SIZE; i++) {
+		if(values[i].used) {
+			UnloadRenderTexture(values[i].texture);
+			values[i].used = false;
+			values[i].texture = (RenderTexture2D){0};
+		}
+	}
 }
 
 u64 hash_key(HUITextCacheKey key) {

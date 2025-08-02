@@ -9,6 +9,7 @@
 #include "../hlib/harena.h"
 
 #include "hui.h"
+#include "hui_internal.h"
 
 Element default_element = {
 	.id = 0,
@@ -79,6 +80,7 @@ void hui_init() {
 void hui_deinit() {
 	if(element_arena.sarenas_used > 0) harena_free(&element_arena);
 	if(functions_vec.data != NULL) hvec_free(&functions_vec);
+	hui_text_cache_free();
 }
 
 i64 frame_num = 0;
