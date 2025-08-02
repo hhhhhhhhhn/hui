@@ -29,6 +29,8 @@ i32 main(void) {
 		.color = BLACK,
 		.font_size = 20,
 	};
+
+	strb to_free = {0};
 	while(!WindowShouldClose()) {
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
@@ -54,7 +56,7 @@ i32 main(void) {
 										hui_text(str_from_strb(&todos[i]), text_style);
 									hui_box_end();
 									if (hui_button(23273948 + i, STR("Done"), text_style)) {
-										strb_free(&todos[i]);
+										to_free = todos[i];
 										for (usize j = i; j < todos_len-1; j++) {
 											todos[j] = todos[j+1];
 										}
@@ -66,6 +68,9 @@ i32 main(void) {
 					hui_stack_end();
 				hui_scroll_end();
 			hui_root_end();
+
+			if (to_free.cap) strb_free(&to_free);
+			to_free.cap = 0;
 
 			int fps = GetFPS();
 			DrawText(TextFormat("FPS: %d", fps), 10, 10, 20, GREEN);

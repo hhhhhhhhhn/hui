@@ -1,12 +1,15 @@
 # TODO
 ## Now
 - Deinit text cache on exit
-- Add styling options to button
-- Add grid
 - Move children to new position without calling layout again
 
 ## Later
 - Switcher layout
+- Remove hard raylib dependency, make switchable
+  - FB version?
+- Remove hlib dependency, use standard constructs
+- Add styling options to button
+- Add grid
 
 # Done
 - Make border and padding a Vec4
