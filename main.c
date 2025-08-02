@@ -130,5 +130,6 @@ i32 main(void) {
 		EndDrawing();
 	}
 	hui_deinit();
+	CloseWindow();
 	return 0;
 }

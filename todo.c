@@ -83,5 +83,6 @@ i32 main(void) {
 	strb_free(&text);
 
 	hui_deinit();
+	CloseWindow();
 	return 0;
 }
