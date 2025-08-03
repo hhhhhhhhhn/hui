@@ -45,7 +45,7 @@ usize hui_get_text_cache_used() {
 
 void hui_text_cache_free() {
 	for(usize i = 0; i < HUI_TEXT_CACHE_SIZE; i++) {
-		if(values[i].used) {
+		if(values[i].texture.texture.width) {
 			UnloadRenderTexture(values[i].texture);
 			values[i].used = false;
 			values[i].texture = (RenderTexture2D){0};
