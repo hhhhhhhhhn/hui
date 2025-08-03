@@ -36,36 +36,38 @@ i32 main(void) {
 			ClearBackground(RAYWHITE);
 			hui_root_start();
 				hui_scroll_start(&scroll);
-					hui_stack_start(0);
+					hui_box_start((BoxStyle){.padding = msymmetric(10), .border = mnone(), .border_color = {0}, .background_color = {0}});
 						hui_stack_start(0);
-							u64 key = hui_text_input(&text, &cursor, text_style);
-							hui_leftright_start(0);
-								hui_nothing();
-								if ((hui_button(1312, STR("Add"), text_style) || key == KEY_ENTER) && text.len > 0) {
-									todos[todos_len] = strb_from_str(str_from_strb(&text));
-									todos_len++;
-									text.len = 0;
-								}
-							hui_leftright_end();
-						hui_stack_end();
-						hui_stack_start(20);
-							hui_nothing();
-							for (usize i = 0; i < todos_len; i++) {
-								hui_leftright_start(10);
-									hui_box_start((BoxStyle){.padding = mvertical(20), .background_color = {0}, .border_color = {0}, .border = mnone()});
-										hui_text(str_from_strb(&todos[i]), text_style);
-									hui_box_end();
-									if (hui_button(23273948 + i, STR("Done"), text_style)) {
-										to_free = todos[i];
-										for (usize j = i; j < todos_len-1; j++) {
-											todos[j] = todos[j+1];
-										}
-										todos_len--;
+							hui_stack_start(10);
+								u64 key = hui_text_input(&text, &cursor, text_style);
+								hui_leftright_start(0);
+									hui_nothing();
+									if ((hui_button(1312, STR("Add"), text_style) || key == KEY_ENTER) && text.len > 0) {
+										todos[todos_len] = strb_from_str(str_from_strb(&text));
+										todos_len++;
+										text.len = 0;
 									}
 								hui_leftright_end();
-							}
+							hui_stack_end();
+							hui_stack_start(20);
+								hui_nothing();
+								for (usize i = 0; i < todos_len; i++) {
+									hui_leftright_start(10);
+										hui_box_start((BoxStyle){.padding = mvertical(20), .background_color = {0}, .border_color = {0}, .border = mnone()});
+											hui_text(str_from_strb(&todos[i]), text_style);
+										hui_box_end();
+										if (hui_button(23273948 + i, STR("Done"), text_style)) {
+											to_free = todos[i];
+											for (usize j = i; j < todos_len-1; j++) {
+												todos[j] = todos[j+1];
+											}
+											todos_len--;
+										}
+									hui_leftright_end();
+								}
+							hui_stack_end();
 						hui_stack_end();
-					hui_stack_end();
+					hui_box_end();
 				hui_scroll_end();
 			hui_root_end();
 
